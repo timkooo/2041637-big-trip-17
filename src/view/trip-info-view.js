@@ -1,6 +1,6 @@
 import {createElement} from '../render.js';
 
-const createBoardTemplate = () => (
+const createTemplate = () => (
   `<section class="trip-main__trip-info  trip-info">
     <div class="trip-info__main">
       <h1 class="trip-info__title">Amsterdam &mdash; Chamonix &mdash; Geneva</h1>
@@ -16,7 +16,7 @@ const createBoardTemplate = () => (
 
 export default class TripInfoView {
   getTemplate() {
-    return createBoardTemplate();
+    return createTemplate();
   }
 
   getElement() {
