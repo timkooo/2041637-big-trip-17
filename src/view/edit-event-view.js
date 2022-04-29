@@ -156,7 +156,7 @@ const createTemplate = () => (
   </form>`
 );
 
-export default class NewEventView {
+export default class EditEventView {
   getTemplate() {
     return createTemplate();
   }
