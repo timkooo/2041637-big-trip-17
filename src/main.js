@@ -2,6 +2,7 @@ import {render} from './render';
 import FiltersView from './view/filters-view';
 import TripInfoView from './view/trip-info-view';
 import TripPresenter from './presenter/trip-presenter';
+import EventsModel from './model/events-model';
 
 const headerElement = document.querySelector('.trip-main');
 const headerFiltersElement = document.querySelector('.trip-controls__filters');
@@ -11,5 +12,6 @@ render(new TripInfoView(), headerElement, 'afterbegin');
 render(new FiltersView(), headerFiltersElement);
 
 const tripPresenter = new TripPresenter();
+const eventsModel = new EventsModel();
 
-tripPresenter.init(mainElement);
+tripPresenter.init(mainElement, eventsModel);
