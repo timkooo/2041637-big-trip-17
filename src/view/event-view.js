@@ -18,8 +18,8 @@ const createOffersTemplate = (offers) => {
   return offersTemplate;
 };
 
-const createEventTemplate = (event, offers) => {
-  const {type, destination, totalPrice, fromDate, toDate, isFavorite} = event;
+const createEventTemplate = (event) => {
+  const {type, destination, totalPrice, fromDate, toDate, isFavorite, offers} = event;
 
   const date = humanizeDate(fromDate);
   const startTime = humanizeTime(fromDate);
@@ -35,7 +35,7 @@ const createEventTemplate = (event, offers) => {
       <div class="event__type">
         <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
       </div>
-      <h3 class="event__title">${type} ${destination}</h3>
+      <h3 class="event__title">${type} ${destination.name}</h3>
       <div class="event__schedule">
         <p class="event__time">
           <time class="event__start-time" datetime="2019-03-18T10:30">${startTime}</time>
@@ -65,13 +65,12 @@ const createEventTemplate = (event, offers) => {
 };
 
 export default class EventView {
-  constructor(event, offers) {
+  constructor(event) {
     this.event = event;
-    this.offers = offers;
   }
 
   getTemplate() {
-    return createEventTemplate(this.event, this.offers);
+    return createEventTemplate(this.event);
   }
 
   getElement() {

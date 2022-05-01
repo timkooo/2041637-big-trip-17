@@ -4,12 +4,12 @@ const humanizeDate = (date) => dayjs(date).format('MMM DD');
 const humanizeTime = (date) => dayjs(date).format('HH:mm');
 
 const getDuration = (date1, date2) => {
-  const a = dayjs(date1);
-  const b = dayjs(date2);
-  const minutes = a.diff(b, 'minute');
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return `${h}H ${m}M`;
+  const fromDate = dayjs(date1);
+  const toDate = dayjs(date2);
+  const duration = fromDate.diff(toDate, 'minute');
+  const hours = Math.floor(duration / 60);
+  const minutes = duration % 60;
+  return hours === 0 ? `${minutes}M` : `${hours}H ${minutes}M`;
 };
 
 const getRandomInteger = (a = 0, b = 1) => {
