@@ -6,13 +6,15 @@ import {humanizeTime} from '../utils';
 
 const createOffersTemplate = (offers) => {
   let offersTemplate = '';
-  if (offers.length !== 0) {
+  if (offers) {
     offers.forEach((offer) => {
-      offersTemplate += `<li className="event__offer">
-      <span className="event__offer-title">${offer.title}</span>
-      &plus;&euro;&nbsp;
-      <span className="event__offer-price">${offer.price}</span>
-       </li>`;
+      if (offer.isSelected) {
+        offersTemplate += `<li className="event__offer">
+        <span className="event__offer-title">${offer.title}</span>
+        &plus;&euro;&nbsp;
+        <span className="event__offer-price">${offer.price}</span>
+         </li>`;
+      }
     });
   }
   return offersTemplate;

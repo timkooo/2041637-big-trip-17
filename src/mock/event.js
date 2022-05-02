@@ -86,7 +86,7 @@ const createOffersList = () => {
 
 const getOffersList = () => offersList;
 
-const getOffersByType = (eventType) => {
+/*const getOffersByType = (eventType) => {
   const offers = [];
   const offersByType = offersList.find((off) => off.type === eventType).offers;
   if (offersByType) {
@@ -100,6 +100,34 @@ const getOffersByType = (eventType) => {
     }
   }
   return offers;
+};*/
+
+const sortOffers = (offer1, offer2) => {
+  if (offer1.isSelected === offer2.isSelected) {
+    return 0;
+  } else {
+    if (offer1.isSelected > offer2.isSelected) {
+      return -1;
+    } else {
+      return 1;
+    }
+  }
+};
+
+const getOffersByType = (eventType) => {
+  const offers = offersList.slice();
+  const offersByType = offers.find((off) => off.type === eventType).offers;
+  if (offersByType) {
+    offersByType.forEach((offer) => {
+      if (getRandomInteger(0, 1)) {
+        offer.isSelected = true;
+      } else {
+        offer.isSelected = false;
+      }
+    });
+    offersByType.sort((a, b) => sortOffers(a, b));
+  }
+  return offersByType;
 };
 
 const getDescription = () => {

@@ -3,9 +3,10 @@ import FiltersView from './view/filters-view';
 import TripInfoView from './view/trip-info-view';
 import TripPresenter from './presenter/trip-presenter';
 import EventModel from './model/event-model';
-import {createOffersList} from './mock/event';
+import {createOffersList, getOffersList} from './mock/event';
 
 createOffersList();
+console.log(getOffersList());
 
 const headerElement = document.querySelector('.trip-main');
 const headerFiltersElement = document.querySelector('.trip-controls__filters');
