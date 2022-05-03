@@ -1,10 +1,7 @@
 import {createElement} from '../render.js';
 
 const createPicturesTemplate = (pictures) => {
-  let picturesList = '';
-  pictures.forEach((picture) => {
-    picturesList += `<img class="event__photo" src="${picture.src}" alt="Event photo">`;
-  });
+  const picturesList = pictures.reduce((accumulator, picture) => `${accumulator  }<img class="event__photo" src="${picture.src}" alt="Event photo">`, '');
   return `<div class="event__photos-container">
             <div class="event__photos-tape">
             ${picturesList}
@@ -51,7 +48,7 @@ const createTemplate = (event) => {
   let destinationTemplate = '';
   let offersTemplate = '';
 
-  const eventNew = event ? event : {
+  const eventNew = event ?? {
     totalPrice: '',
     fromDate: '',
     toDate: '',

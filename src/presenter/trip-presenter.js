@@ -2,9 +2,14 @@ import SortView from '../view/sort-view';
 import EventsListView from '../view/events-list-view';
 import EventView from '../view/event-view';
 import EditEventView from '../view/edit-event-view';
+import {createOffersList} from '../mock/event';
 import {render} from '../render.js';
 
 export default class TripPresenter {
+  constructor() {
+    createOffersList();
+  }
+
   tripListComponent = new EventsListView();
 
   init = (container, eventModel = null) => {
