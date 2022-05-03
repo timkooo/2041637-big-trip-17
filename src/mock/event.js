@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 const offersList = [];
 
 const offerTypeList = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
-const description = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget.
+const descriptionText = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget.
 Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra. Nullam nunc ex, convallis
 sed finibus eget, sollicitudin eget ante. Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur
 ipsum. Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui. Sed sed nisi sed
@@ -105,12 +105,12 @@ const getOffersByType = (eventType) => {
 };
 
 const getDescription = () => {
-  let descrip = '';
-  const descriptions = description.split('. ');
+  let description = '';
+  const descriptions = descriptionText.split('. ');
   for (let i = 0; i < 5; i++) {
-    descrip += `${descriptions[getRandomInteger(0, descriptions.length - 1)]}. `;
+    description += `${descriptions[getRandomInteger(0, descriptions.length - 1)]}. `;
   }
-  return descrip;
+  return description;
 };
 
 const getPictures = () => {
