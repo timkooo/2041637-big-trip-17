@@ -21,9 +21,20 @@ export default class TripPresenter {
     const event = eventComponent.event;
     const editEventComponent = new EditEventView(event);
 
+    const onEscKeyDown = (evt) => {
+      if (evt.key === 'Escape' || evt.key === 'Esc') {
+        evt.preventDefault();
+        this.#eventsListComponent.element.replaceChild(eventComponent.element, editEventComponent.element);
+        document.removeEventListener('keydown', onEscKeyDown);
+      }
+    };
+
+    document.addEventListener('keydown', (evt) => onEscKeyDown(evt));
+
     editEventComponent.element.addEventListener('click', (evt) => {
       if (evt.target.closest('.event__save-btn') || evt.target.closest('.event__reset-btn')) {
         this.#eventsListComponent.element.replaceChild(eventComponent.element, editEventComponent.element);
+        document.removeEventListener('keydown', onEscKeyDown);
       }
     });
 
