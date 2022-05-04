@@ -43,7 +43,7 @@ const createOffersTemplate = (offers) => {
           </section>`;
 };
 
-const createTemplate = (event) => {
+const createEditEventTemplate = (event) => {
 
   let destinationTemplate = '';
   let offersTemplate = '';
@@ -177,7 +177,7 @@ export default class EditEventView {
   }
 
   get template() {
-    return createTemplate(this.#event);
+    return createEditEventTemplate(this.#event);
   }
 
   get element() {

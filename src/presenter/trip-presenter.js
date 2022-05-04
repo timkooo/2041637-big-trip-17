@@ -4,6 +4,7 @@ import EventView from '../view/event-view';
 import EditEventView from '../view/edit-event-view';
 import {createOffersList} from '../mock/event';
 import {render} from '../render.js';
+import EventsListEmptyView from '../view/events-list-empty-view';
 
 export default class TripPresenter {
   #container = null;
@@ -29,7 +30,7 @@ export default class TripPresenter {
       }
     };
 
-    document.addEventListener('keydown', (evt) => onEscKeyDown(evt));
+    document.addEventListener('keydown', onEscKeyDown);
 
     editEventComponent.element.addEventListener('click', (evt) => {
       if (evt.target.closest('.event__save-btn') || evt.target.closest('.event__reset-btn')) {
@@ -43,16 +44,17 @@ export default class TripPresenter {
 
   init = (container, eventModel) => {
     this.#container = container;
-    this.#eventModel = eventModel;
-    //this.#eventsList = this.eventModel.events.slice();
-    this.#eventsList = [...this.#eventModel.events];
+    if (eventModel.events.length !== 0) {
+      this.#eventModel = eventModel;
+      this.#eventsList = [...this.#eventModel.events];
 
-    render(new SortView(), this.#container);
-    render(this.#eventsListComponent, this.#container);
-    render(new EventView(this.#eventsList[0]), this.#eventsListComponent.element);
-    render(new EditEventView(this.#eventsList[3]), this.#eventsListComponent.element);
+      render(new SortView(), this.#container);
+      render(this.#eventsListComponent, this.#container);
 
-    this.#renderEvents();
+      this.#renderEvents();
+    } else {
+      render(new EventsListEmptyView(), this.#container);
+    }
   };
 
   #renderEvents = () => {
