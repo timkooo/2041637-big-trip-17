@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view';
 
 const createPicturesTemplate = (pictures) => {
   const picturesList = pictures.reduce((accumulator, picture) => `${accumulator  }<img class="event__photo" src="${picture.src}" alt="Event photo">`, '');
@@ -168,11 +168,11 @@ const createEditEventTemplate = (event) => {
   </form>`;
 };
 
-export default class EditEventView {
-  #element = null;
+export default class EditEventView extends AbstractView{
   #event = null;
 
   constructor(event) {
+    super();
     this.#event = event;
   }
 
@@ -180,15 +180,13 @@ export default class EditEventView {
     return createEditEventTemplate(this.#event);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
+  setCloseEditFormHandler = (callBack) => {
+    this._callback.click = callBack;
+    this.element.addEventListener('click', this.#closeEditFormHandler);
+  };
 
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
-  }
+  #closeEditFormHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.click(evt);
+  };
 }
