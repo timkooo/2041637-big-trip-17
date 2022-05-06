@@ -1,4 +1,5 @@
-import {render} from './render';
+//import {render} from './render';
+import {render} from './framework/render';
 import FiltersView from './view/filters-view';
 import TripInfoView from './view/trip-info-view';
 import TripPresenter from './presenter/trip-presenter';

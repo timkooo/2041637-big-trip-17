@@ -3,7 +3,7 @@ import EventsListView from '../view/events-list-view';
 import EventView from '../view/event-view';
 import EditEventView from '../view/edit-event-view';
 import {createOffersList} from '../mock/event';
-import {render} from '../render.js';
+import {render} from '../framework/render';
 import EventsListEmptyView from '../view/events-list-empty-view';
 
 export default class TripPresenter {
@@ -30,14 +30,16 @@ export default class TripPresenter {
       }
     };
 
-    document.addEventListener('keydown', onEscKeyDown);
-
-    editEventComponent.element.addEventListener('click', (evt) => {
+    const closeEditFormHandler = (evt) => {
       if (evt.target.closest('.event__save-btn') || evt.target.closest('.event__reset-btn')) {
         this.#eventsListComponent.element.replaceChild(eventComponent.element, editEventComponent.element);
         document.removeEventListener('keydown', onEscKeyDown);
       }
-    });
+    };
+
+    document.addEventListener('keydown', onEscKeyDown);
+
+    editEventComponent.setCloseEditFormHandler(closeEditFormHandler);
 
     this.#eventsListComponent.element.replaceChild(editEventComponent.element, eventComponent.element);
   };
@@ -57,18 +59,20 @@ export default class TripPresenter {
     }
   };
 
+  #eventListHandler = (evt) => {
+    if (evt.target.closest('.event__rollup-btn')) {
+      const template = evt.target.closest('.trip-events__item');
+      const currentComponent = this.#eventComponentsList.find((component) => component.element === template);
+      this.#showEditForm(currentComponent);
+    }
+  };
+
   #renderEvents = () => {
     for (let i = 1; i < this.#eventsList.length; i++) {
       this.#renderEvent(this.#eventsList[i]);
     }
 
-    this.#eventsListComponent.element.addEventListener('click', (evt) => {
-      if (evt.target.closest('.event__rollup-btn')) {
-        const template = evt.target.closest('.trip-events__item');
-        const currentComponent = this.#eventComponentsList.find((component) => component.element === template);
-        this.#showEditForm(currentComponent);
-      }
-    });
+    this.#eventsListComponent.setClickHandler(this.#eventListHandler);
   };
 
   #renderEvent = (event) => {
