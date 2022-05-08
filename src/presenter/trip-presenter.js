@@ -5,6 +5,7 @@ import EditEventView from '../view/edit-event-view';
 import {createOffersList} from '../mock/event';
 import {render} from '../framework/render';
 import EventsListEmptyView from '../view/events-list-empty-view';
+import {filter} from '../utils/filter';
 
 export default class TripPresenter {
   #container = null;
@@ -49,6 +50,8 @@ export default class TripPresenter {
     if (eventModel.events.length !== 0) {
       this.#eventModel = eventModel;
       this.#eventsList = [...this.#eventModel.events];
+
+      this.#eventsList = this.#eventsList.filter(filter['future']);
 
       render(new SortView(), this.#container);
       render(this.#eventsListComponent, this.#container);
