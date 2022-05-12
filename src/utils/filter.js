@@ -15,5 +15,3 @@ const filter = {
 };
 
 export {filter, FilterTypes};
-
-
