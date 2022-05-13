@@ -1,6 +1,6 @@
-import {humanizeDate} from '../utils';
-import {getDuration} from '../utils';
-import {humanizeTime} from '../utils';
+import {humanizeDate} from '../utils/common';
+import {getDuration} from '../utils/common';
+import {humanizeTime} from '../utils/common';
 import AbstractView from '../framework/view/abstract-view';
 
 
