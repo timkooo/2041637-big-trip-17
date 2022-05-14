@@ -1,5 +1,6 @@
 import {getRandomInteger} from '../utils/common';
 import dayjs from 'dayjs';
+import {nanoid} from 'nanoid';
 
 const offersList = [];
 
@@ -139,7 +140,7 @@ const createEvent = () => {
     fromDate : date.fromDate,
     toDate : date.toDate,
     destination : getDestination(),
-    id : '0',
+    id : nanoid(),
     isFavorite : Boolean(getRandomInteger(0,1)),
     offers : getOffersByType(eventType),
     type : eventType,

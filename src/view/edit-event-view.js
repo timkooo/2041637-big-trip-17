@@ -67,7 +67,8 @@ const createEditEventTemplate = (event) => {
     offersTemplate = createOffersTemplate(eventNew.offers);
   }
 
-  return `<form class="event event--edit" action="#" method="post">
+  return `<li class="trip-events__item">
+  <form class="event event--edit" action="#" method="post">
     <header class="event__header">
       <div class="event__type-wrapper">
         <label class="event__type  event__type-btn" for="event-type-toggle-1">
@@ -165,7 +166,8 @@ const createEditEventTemplate = (event) => {
       ${destinationTemplate}
 
     </section>
-  </form>`;
+  </form>
+</li>`;
 };
 
 export default class EditEventView extends AbstractView{
@@ -181,12 +183,22 @@ export default class EditEventView extends AbstractView{
   }
 
   setCloseEditFormHandler = (callBack) => {
-    this._callback.click = callBack;
-    this.element.addEventListener('click', this.#closeEditFormHandler);
+    this._callback.editClick = callBack;
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#closeEditFormHandler);
+  };
+
+  setUpdateEventHandler = (callBack) => {
+    this._callback.updateClick = callBack;
+    this.element.querySelector('form').addEventListener('submit', this.#updateEventHadler);
   };
 
   #closeEditFormHandler = (evt) => {
     evt.preventDefault();
-    this._callback.click(evt);
+    this._callback.editClick();
+  };
+
+  #updateEventHadler = (evt) => {
+    evt.preventDefault();
+    this._callback.updateClick(this.#event);
   };
 }
