@@ -1,4 +1,5 @@
 import AbstractView from '../framework/view/abstract-view';
+import {humanizeEditTime} from '../utils/common';
 
 const createPicturesTemplate = (pictures) => {
   const picturesList = pictures.reduce((accumulator, picture) => `${accumulator  }<img class="event__photo" src="${picture.src}" alt="Event photo">`, '');
@@ -58,6 +59,9 @@ const createEditEventTemplate = (event) => {
     offers: '',
     type: 'bus',
   };
+
+  const startTime = humanizeEditTime(event.fromDate);
+  const endTime = humanizeEditTime(event.toDate);
 
   if (eventNew.destination.description || eventNew.destination.pictures) {
     destinationTemplate = createDestinationTemplate(eventNew.destination);
@@ -143,18 +147,18 @@ const createEditEventTemplate = (event) => {
 
       <div class="event__field-group  event__field-group--time">
         <label class="visually-hidden" for="event-start-time-1">From</label>
-        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${eventNew.fromDate}">
+        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${startTime}">
         &mdash;
         <label class="visually-hidden" for="event-end-time-1">To</label>
-        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${eventNew.toDate}">
+        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${endTime}">
       </div>
 
       <div class="event__field-group  event__field-group--price">
         <label class="event__label" for="event-price-1">
           <span class="visually-hidden">Price</span>
-          ${eventNew.totalPrice}&euro;
+          &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="">
+        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${eventNew.totalPrice}">
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>

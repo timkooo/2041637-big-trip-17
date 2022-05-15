@@ -35,4 +35,15 @@ export default class SortView extends AbstractView{
     return createSortTemplate();
   }
 
+  setSortEventsHandler = (cb) => {
+    this._callback.sortEventsClick = cb;
+    this.element.addEventListener('click', this.#SortEventsHandler);
+  };
+
+  #SortEventsHandler = (evt) => {
+    if (evt.target.closest('.trip-sort__input')) {
+      evt.target.checked = true;
+      this._callback.sortEventsClick(evt.target.value);
+    }
+  };
 }

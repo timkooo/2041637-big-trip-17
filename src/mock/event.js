@@ -132,11 +132,13 @@ const getDestination = () => ({
   pictures: getPictures(),
 });
 
+const getPrice = () => getRandomInteger(20, 300);
+
 const createEvent = () => {
   const eventType = getType();
   const date = getDate();
   return {
-    totalPrice: 122,
+    totalPrice: getPrice(),
     fromDate : date.fromDate,
     toDate : date.toDate,
     destination : getDestination(),

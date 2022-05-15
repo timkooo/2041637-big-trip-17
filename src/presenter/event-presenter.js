@@ -56,6 +56,11 @@ export default class EventPresenter {
     remove(prevEditEventComponent);
   }
 
+  destroy = () => {
+    remove(this.#eventComponent);
+    remove(this.#editEventComponent);
+  };
+
   #onEscKeyDown = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();

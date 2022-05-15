@@ -9,9 +9,10 @@ const headerFiltersElement = document.querySelector('.trip-controls__filters');
 const mainElement = document.querySelector('.trip-events');
 
 render(new TripInfoView(), headerElement, 'afterbegin');
-render(new FiltersView(), headerFiltersElement);
+const filtersView = new FiltersView();
+render(filtersView, headerFiltersElement);
 
 const eventsModel = new EventsModel();
-const tripPresenter = new TripPresenter(mainElement, eventsModel);
+const tripPresenter = new TripPresenter(mainElement, eventsModel, filtersView);
 
 tripPresenter.init();
