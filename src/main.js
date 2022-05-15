@@ -11,7 +11,7 @@ const mainElement = document.querySelector('.trip-events');
 render(new TripInfoView(), headerElement, 'afterbegin');
 render(new FiltersView(), headerFiltersElement);
 
-const eventModel = new EventsModel();
-const tripPresenter = new TripPresenter(mainElement, eventModel);
+const eventsModel = new EventsModel();
+const tripPresenter = new TripPresenter(mainElement, eventsModel);
 
 tripPresenter.init();

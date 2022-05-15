@@ -182,23 +182,23 @@ export default class EditEventView extends AbstractView{
     return createEditEventTemplate(this.#event);
   }
 
-  setCloseEditFormHandler = (callBack) => {
-    this._callback.editClick = callBack;
+  setCloseEditFormHandler = (cb) => {
+    this._callback.closeEditFormClick = cb;
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#closeEditFormHandler);
   };
 
-  setUpdateEventHandler = (callBack) => {
-    this._callback.updateClick = callBack;
+  setUpdateEventHandler = (cb) => {
+    this._callback.updateEventClick = cb;
     this.element.querySelector('form').addEventListener('submit', this.#updateEventHadler);
   };
 
   #closeEditFormHandler = (evt) => {
     evt.preventDefault();
-    this._callback.editClick();
+    this._callback.closeEditFormClick();
   };
 
   #updateEventHadler = (evt) => {
     evt.preventDefault();
-    this._callback.updateClick(this.#event);
+    this._callback.updateEventClick(this.#event);
   };
 }

@@ -25,13 +25,12 @@ export default class TripPresenter {
   };
 
   #renderEventsList = () => {
-    if (this.#eventsList.length !== 0) {
-      this.#eventsList = [...this.#eventsModel.events];
-      // this.#eventsList = this.#eventsList.filter(filter[FilterTypes.FUTURE]);
-      this.#renderEventsListWithData();
-    } else {
+    if (this.#eventsList.length === 0) {
       this.#renderEventsListEmpty();
+      return;
     }
+    this.#eventsList = [...this.#eventsModel.events];
+    this.#renderEventsListWithData();
   };
 
   #updateEventDataHandler = (updatedEvent) => {
@@ -54,7 +53,7 @@ export default class TripPresenter {
     render(new SortView(), this.#tripContainer);
   };
 
-  #eventListHandler = (evt) => {
+  #openEditFormHandler = (evt) => {
     if (evt.target.closest('.event__rollup-btn')) {
       const template = evt.target.closest('.trip-events__item');
       const eventPresenter = this.#eventPresentersList.get(template.dataset.eventId);
@@ -67,10 +66,8 @@ export default class TripPresenter {
   };
 
   #renderEvents = () => {
-    for (let i = 1; i < this.#eventsList.length; i++) {
-      this.#renderEvent(this.#eventsList[i]);
-    }
-    this.#eventsListComponent.setClickHandler(this.#eventListHandler);
+    this.#eventsList.forEach((event) => this.#renderEvent(event));
+    this.#eventsListComponent.setOpenEditFormHandler(this.#openEditFormHandler);
   };
 
   #renderEvent = (event) => {

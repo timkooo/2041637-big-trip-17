@@ -32,8 +32,9 @@ export default class EventPresenter {
     this.#eventComponent = new EventView(this.#event);
     this.#editEventComponent = new EditEventView(this.#event);
 
+    this.#eventComponent.setUpdateEventFavoriteHandler(this.#updateEventFavoriteHandler);
     this.#editEventComponent.setCloseEditFormHandler(this.#closeEditFormHandler);
-    this.#editEventComponent.setUpdateEventHandler(this.#updateEventHadler);
+    this.#editEventComponent.setUpdateEventHandler(this.#updateEventDataHandler);
 
     this.#eventComponent.element.dataset.eventId = this.#event.id;
     this.#editEventComponent.element.dataset.eventId = this.#event.id;
@@ -59,7 +60,6 @@ export default class EventPresenter {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
       this.#closeEditFormHandler();
-    //  document.removeEventListener('keydown', this.#onEscKeyDown);
     }
   };
 
@@ -82,7 +82,11 @@ export default class EventPresenter {
     }
   };
 
-  #updateEventHadler = (event) => {
+  #updateEventFavoriteHandler = (event) => {
+    this.#dataUpdateFunc({...event, isFavorite : !event.isFavorite});
+  };
+
+  #updateEventDataHandler = (event) => {
     this.#dataUpdateFunc(event);
     this.#closeEditFormHandler();
   };

@@ -1,7 +1,6 @@
 import {createEvent} from '../mock/event';
 import {createOffersList} from '../mock/event';
 
-
 export default class EventsModel {
   #events = null;
 
