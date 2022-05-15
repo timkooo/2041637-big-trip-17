@@ -1,87 +1,78 @@
 import SortView from '../view/sort-view';
 import EventsListView from '../view/events-list-view';
-import EventView from '../view/event-view';
-import EditEventView from '../view/edit-event-view';
-import {createOffersList} from '../mock/event';
 import {render} from '../framework/render';
 import EventsListEmptyView from '../view/events-list-empty-view';
-import {filter, FilterTypes} from '../utils/filter';
+import EventPresenter from './event-presenter';
+import {updateItem} from '../utils/common';
 
 export default class TripPresenter {
-  #container = null;
-  #eventModel = null;
+  #tripContainer = null;
+  #eventsModel = null;
   #eventsList = null;
-  #eventComponentsList = [];
+  #eventPresentersList = new Map();
+  #eventsListComponent = null;
+  #eventsListEmptyComponent = null;
 
-  #eventsListComponent = new EventsListView();
-
-  constructor() {
-    createOffersList();
+  constructor(tripContainer, eventsModel) {
+    this.#tripContainer = tripContainer;
+    this.#eventsModel = eventsModel;
+    this.#eventsList = this.#eventsModel.events;
   }
 
-  #showEditForm = (eventComponent) => {
-    const event = eventComponent.event;
-    const editEventComponent = new EditEventView(event);
-
-    const onEscKeyDown = (evt) => {
-      if (evt.key === 'Escape' || evt.key === 'Esc') {
-        evt.preventDefault();
-        this.#eventsListComponent.element.replaceChild(eventComponent.element, editEventComponent.element);
-        document.removeEventListener('keydown', onEscKeyDown);
-      }
-    };
-
-    const closeEditFormHandler = (evt) => {
-      if (evt.target.closest('.event__save-btn') || evt.target.closest('.event__reset-btn')) {
-        this.#eventsListComponent.element.replaceChild(eventComponent.element, editEventComponent.element);
-        document.removeEventListener('keydown', onEscKeyDown);
-      }
-    };
-
-    document.addEventListener('keydown', onEscKeyDown);
-
-    editEventComponent.setCloseEditFormHandler(closeEditFormHandler);
-
-    this.#eventsListComponent.element.replaceChild(editEventComponent.element, eventComponent.element);
+  init = () => {
+    this.#renderSortComponent();
+    this.#renderEventsList();
   };
 
-  init = (container, eventModel) => {
-    this.#container = container;
-    if (eventModel.events.length !== 0) {
-      this.#eventModel = eventModel;
-      this.#eventsList = [...this.#eventModel.events];
-
-      this.#eventsList = this.#eventsList.filter(filter[FilterTypes.FUTURE]);
-
-      render(new SortView(), this.#container);
-      render(this.#eventsListComponent, this.#container);
-
-      this.#renderEvents();
-    } else {
-      render(new EventsListEmptyView(), this.#container);
+  #renderEventsList = () => {
+    if (this.#eventsList.length === 0) {
+      this.#renderEventsListEmpty();
+      return;
     }
+    this.#eventsList = [...this.#eventsModel.events];
+    this.#renderEventsListWithData();
   };
 
-  #eventListHandler = (evt) => {
+  #updateEventDataHandler = (updatedEvent) => {
+    this.#eventsList = updateItem(this.#eventsList, updatedEvent);
+    this.#eventPresentersList.get(updatedEvent.id).init(updatedEvent);
+  };
+
+  #renderEventsListEmpty = () => {
+    this.#eventsListEmptyComponent = new EventsListEmptyView();
+    render(this.#eventsListEmptyComponent, this.#tripContainer);
+  };
+
+  #renderEventsListWithData = () => {
+    this.#eventsListComponent = new EventsListView();
+    render(this.#eventsListComponent, this.#tripContainer);
+    this.#renderEvents();
+  };
+
+  #renderSortComponent = () => {
+    render(new SortView(), this.#tripContainer);
+  };
+
+  #openEditFormHandler = (evt) => {
     if (evt.target.closest('.event__rollup-btn')) {
       const template = evt.target.closest('.trip-events__item');
-      const currentComponent = this.#eventComponentsList.find((component) => component.element === template);
-      this.#showEditForm(currentComponent);
+      const eventPresenter = this.#eventPresentersList.get(template.dataset.eventId);
+      eventPresenter.showEditForm();
     }
+  };
+
+  #modeChangeHandler = () => {
+    this.#eventPresentersList.forEach((presenter) => presenter.resetView());
   };
 
   #renderEvents = () => {
-    for (let i = 1; i < this.#eventsList.length; i++) {
-      this.#renderEvent(this.#eventsList[i]);
-    }
-
-    this.#eventsListComponent.setClickHandler(this.#eventListHandler);
+    this.#eventsList.forEach((event) => this.#renderEvent(event));
+    this.#eventsListComponent.setOpenEditFormHandler(this.#openEditFormHandler);
   };
 
   #renderEvent = (event) => {
-    const eventComponent = new EventView(event);
-    this.#eventComponentsList.push(eventComponent);
-
-    render(eventComponent, this.#eventsListComponent.element);
+    const eventPresenter = new EventPresenter(this.#eventsListComponent, this.#modeChangeHandler, this.#updateEventDataHandler);
+    this.#eventPresentersList.set(event.id, eventPresenter);
+    eventPresenter.init(event);
   };
 }
