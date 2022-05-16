@@ -1,10 +1,11 @@
 import SortView from '../view/sort-view';
 import EventsListView from '../view/events-list-view';
-import {render} from '../framework/render';
+import {remove, render} from '../framework/render';
 import EventsListEmptyView from '../view/events-list-empty-view';
 import EventPresenter from './event-presenter';
 import {updateItem} from '../utils/common';
-import {filter, FilterTypes, sorting, SortingTypes} from '../utils/filter';
+import {filter, FilterTypes} from '../utils/filter';
+import {sorting, SortingTypes} from '../utils/sorting';
 
 export default class TripPresenter {
   #tripContainer = null;
@@ -15,6 +16,7 @@ export default class TripPresenter {
   #eventsListComponent = null;
   #eventsListEmptyComponent = null;
   #filterComponent = null;
+  #sortingComponent = null;
   #currentFilter = FilterTypes.EVERYTHING;
   #currentSorting = SortingTypes.DAY;
 
@@ -40,24 +42,15 @@ export default class TripPresenter {
   };
 
   #filterEventsHandler = (newFilter) => {
-    switch (newFilter) {
-      case this.#currentFilter:
-        break;
-      case FilterTypes.EVERYTHING:
-        this.#eventsList = this.#eventsListInitial;
-        this.#currentFilter = FilterTypes.EVERYTHING;
-        this.#currentSorting = SortingTypes.DAY;
-        this.#reRenderEventsList();
-        // this.#sortEventsHandler(SortingTypes.DAY);
-        break;
-      default:
-        this.#eventsList = this.#eventsListInitial.filter(filter[newFilter]);
-        this.#currentFilter = newFilter;
-        this.#currentSorting = SortingTypes.DAY;
-        this.#reRenderEventsList();
-        // this.#sortEventsHandler(SortingTypes.DAY);
-        break;
+    if (newFilter === this.#currentFilter) {
+      return;
     }
+    this.#eventsList = this.#eventsListInitial.filter(filter[newFilter]);
+    this.#currentFilter = newFilter;
+    this.#currentSorting = SortingTypes.DAY;
+    remove(this.#sortingComponent);
+    this.#renderSortComponent();
+    this.#reRenderEventsList();
   };
 
   #reRenderEventsList = () => {
@@ -97,9 +90,9 @@ export default class TripPresenter {
   };
 
   #renderSortComponent = () => {
-    const sortView = new SortView();
-    sortView.setSortEventsHandler(this.#sortEventsHandler);
-    render(sortView, this.#tripContainer);
+    this.#sortingComponent = new SortView();
+    this.#sortingComponent.setSortEventsHandler(this.#sortEventsHandler);
+    render(this.#sortingComponent, this.#tripContainer);
   };
 
   #openEditFormHandler = (evt) => {
