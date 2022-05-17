@@ -37,10 +37,10 @@ export default class SortView extends AbstractView{
 
   setSortEventsHandler = (cb) => {
     this._callback.sortEventsClick = cb;
-    this.element.addEventListener('click', this.#SortEventsHandler);
+    this.element.addEventListener('click', this.#sortEventsHandler);
   };
 
-  #SortEventsHandler = (evt) => {
+  #sortEventsHandler = (evt) => {
     if (evt.target.closest('.trip-sort__input')) {
       evt.target.checked = true;
       this._callback.sortEventsClick(evt.target.value);
