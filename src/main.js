@@ -1,5 +1,4 @@
 import {render} from './framework/render';
-import FiltersView from './view/filters-view';
 import TripInfoView from './view/trip-info-view';
 import TripPresenter from './presenter/trip-presenter';
 import EventsModel from './model/events-model';
@@ -9,10 +8,8 @@ const headerFiltersElement = document.querySelector('.trip-controls__filters');
 const mainElement = document.querySelector('.trip-events');
 
 render(new TripInfoView(), headerElement, 'afterbegin');
-const filtersView = new FiltersView();
-render(filtersView, headerFiltersElement);
 
 const eventsModel = new EventsModel();
-const tripPresenter = new TripPresenter(mainElement, eventsModel, filtersView);
+const tripPresenter = new TripPresenter(mainElement, eventsModel, headerFiltersElement);
 
 tripPresenter.init();

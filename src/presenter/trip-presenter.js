@@ -6,32 +6,40 @@ import EventPresenter from './event-presenter';
 import {updateItem} from '../utils/common';
 import {filter, FilterTypes} from '../utils/filter';
 import {sorting, SortingTypes} from '../utils/sorting';
+import FiltersView from '../view/filters-view';
 
 export default class TripPresenter {
   #tripContainer = null;
+  #filterContainer = null;
   #eventsModel = null;
   #eventsList = null;
   #eventsListInitial = null;
   #eventPresentersList = new Map();
   #eventsListComponent = null;
   #eventsListEmptyComponent = null;
-  #filterComponent = null;
   #sortingComponent = null;
+  #filterComponent = null;
   #currentFilter = FilterTypes.EVERYTHING;
   #currentSorting = SortingTypes.DAY;
 
-  constructor(tripContainer, eventsModel, filterComponent) {
+  constructor(tripContainer, eventsModel, filterContainer) {
     this.#tripContainer = tripContainer;
     this.#eventsModel = eventsModel;
     this.#eventsList = [...this.#eventsModel.events];
     this.#eventsListInitial = [...this.#eventsModel.events];
-    this.#filterComponent = filterComponent;
+    this.#filterContainer = filterContainer;
   }
 
   init = () => {
+    this.#renderFilterComponent();
     this.#renderSortComponent();
     this.#renderEventsList();
     this.#filterComponent.setFilterEventsHandler(this.#filterEventsHandler);
+  };
+
+  #renderFilterComponent = () => {
+    this.#filterComponent = new FiltersView();
+    render(this.#filterComponent, this.#filterContainer);
   };
 
   #sortEventsHandler = (newSorting) => {
