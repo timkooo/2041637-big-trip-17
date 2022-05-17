@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 
 const humanizeDate = (date) => dayjs(date).format('MMM DD');
 const humanizeTime = (date) => dayjs(date).format('HH:mm');
+const humanizeEditTime = (date) => dayjs(date).format('DD/MM/YY HH:mm');
 
 const getDuration = (date1, date2) => {
   const fromDate = dayjs(date1);
@@ -33,4 +34,4 @@ const updateItem = (items, update) => {
   ];
 };
 
-export {getRandomInteger, humanizeDate, getDuration, humanizeTime, updateItem};
+export {getRandomInteger, humanizeDate, getDuration, humanizeTime, updateItem, humanizeEditTime};

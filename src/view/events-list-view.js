@@ -10,10 +10,10 @@ export default class EventsListView extends AbstractView{
 
   setOpenEditFormHandler = (cb) => {
     this._callback.openEditFormClick = cb;
-    this.element.addEventListener('click', this.#OpenEditFormHandler);
+    this.element.addEventListener('click', this.#openEditFormHandler);
   };
 
-  #OpenEditFormHandler = (evt) => {
+  #openEditFormHandler = (evt) => {
     this._callback.openEditFormClick(evt);
   };
 }

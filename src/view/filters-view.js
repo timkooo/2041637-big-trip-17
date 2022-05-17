@@ -27,4 +27,15 @@ export default class FiltersView extends AbstractView{
     return createFiltersTemplate();
   }
 
+  setFilterEventsHandler = (cb) => {
+    this._callback.filterEventsClick = cb;
+    this.element.addEventListener('click', this.#filterEventsHandler);
+  };
+
+  #filterEventsHandler = (evt) => {
+    if (evt.target.closest('.trip-filters__filter-input')) {
+      evt.target.checked = true;
+      this._callback.filterEventsClick(evt.target.value);
+    }
+  };
 }
