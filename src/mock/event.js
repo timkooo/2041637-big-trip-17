@@ -67,7 +67,7 @@ const getType = () => offerTypeList[getRandomInteger(0, offerTypeList.length-1)]
 
 const getDate = () => {
   const fromDate = dayjs().add(getRandomInteger(-3, 3), 'month').add(getRandomInteger(3, 20), 'day').toDate();
-  const toDate = dayjs(fromDate).add(getRandomInteger(30, 180), 'minute').toDate();
+  const toDate = dayjs(fromDate).add(getRandomInteger(17, 21), 'hour').add(getRandomInteger(200, 400), 'minute').toDate();
   return {
     fromDate,
     toDate,

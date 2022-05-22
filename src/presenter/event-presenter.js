@@ -63,7 +63,7 @@ export default class EventPresenter {
 
   #onEscKeyDown = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
-      evt.preventDefault();
+      // evt.preventDefault();
       this.#editEventComponent.reset(this.#event);
       this.#closeEditFormHandler();
     }
@@ -85,7 +85,7 @@ export default class EventPresenter {
 
   resetView = () => {
     if (this.#eventMode !== EventMode.DEFAULT) {
-      this.#editEventComponent.reset(this.#event);
+      // this.#editEventComponent.reset(this.#event);
       this.#closeEditFormHandler();
     }
   };

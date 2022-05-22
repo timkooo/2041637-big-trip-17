@@ -1,5 +1,8 @@
 import {humanizeEditTime} from '../utils/common';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
+import flatpickr from 'flatpickr';
+
+import 'flatpickr/dist/flatpickr.min.css';
 
 const BLANK_EVENT = {
   totalPrice: '',
@@ -55,23 +58,20 @@ const createOffersTemplate = (offers) => {
           </section>`;
 };
 
-// const createEditEventTemplate = (event) => {
 const createEditEventTemplate = (data) => {
-  const {type, fromDate, toDate, offers, destination, totalPrice, hasOffers, hasDescription} = data;
+  const {type, fromDate, toDate, offers, destination, totalPrice} = data;
 
   let destinationTemplate = '';
   let offersTemplate = '';
 
-  // const startTime = humanizeEditTime(event.fromDate);
-  // const endTime = humanizeEditTime(event.toDate);
   const startTime = humanizeEditTime(fromDate);
   const endTime = humanizeEditTime(toDate);
 
-  if (hasDescription) {
+  if (data.destination.description || data.destination.pictures) {
     destinationTemplate = createDestinationTemplate(destination);
   }
 
-  if (hasOffers) {
+  if (data.offers.length !== 0) {
     offersTemplate = createOffersTemplate(offers);
   }
 
@@ -180,10 +180,14 @@ const createEditEventTemplate = (data) => {
 
 export default class EditEventView extends AbstractStatefulView{
 
+  #fromDatepicker = null;
+  #toDatepicker = null;
+
   constructor(event = BLANK_EVENT) {
     super();
     this._state = this.#convertEventToStatement(event);
 
+    this.#setDatepicker();
     this.#setInnerHandlers();
   }
 
@@ -191,22 +195,61 @@ export default class EditEventView extends AbstractStatefulView{
     return createEditEventTemplate(this._state);
   }
 
-  #convertEventToStatement = (event) => {
-    const statement = JSON.parse(JSON.stringify(event));
-    return {...statement,
-      hasDescription : Boolean(event.destination.description || event.destination.pictures),
-      hasOffers : Boolean(event.offers.length),
-    };
+  removeElement = () => {
+    super.removeElement();
+
+    if (this.#fromDatepicker) {
+      this.#fromDatepicker.destroy();
+      this.#fromDatepicker = null;
+    }
+    if (this.#toDatepicker) {
+      this.#toDatepicker.destroy();
+      this.#toDatepicker = null;
+    }
   };
 
-  #convertStatementToEvent = () => {
-    const event = {...this._state};
-    delete event.hasDescription;
-    delete event.hasOffers;
-    return event;
+  #setDatepicker = () => {
+    this.#fromDatepicker = flatpickr(
+      this.element.querySelectorAll('#event-start-time-1'),
+      {
+        enableTime: true,
+        'time_24hr': true,
+        maxDate: this._state.toDate,
+        dateFormat: 'd/m/y H:i',
+        defaultDate: this._state.fromDate,
+        onChange: this.#editFromDateHandler,
+      },
+    );
+    this.#toDatepicker = flatpickr(
+      this.element.querySelectorAll('#event-end-time-1'),
+      {
+        enableTime: true,
+        'time_24hr': true,
+        minDate: this._state.fromDate,
+        dateFormat: 'd/m/y H:i',
+        defaultDate: this._state.toDate,
+        onChange: this.#editToDateHandler,
+      },
+    );
   };
+
+  #convertEventToStatement = (event) => ({...event});
+
+  #convertStatementToEvent = () => ({...this._state});
 
   reset = (event) => this.updateElement(this.#convertEventToStatement(event));
+
+  #editFromDateHandler = ([userDate]) => {
+    this.updateElement({
+      fromDate: userDate,
+    });
+  };
+
+  #editToDateHandler = ([userDate]) => {
+    this.updateElement({
+      toDate: userDate,
+    });
+  };
 
   setCloseEditFormHandler = (cb) => {
     this._callback.closeEditFormClick = cb;
@@ -241,19 +284,26 @@ export default class EditEventView extends AbstractStatefulView{
   #editOffersHandler = (evt) => {
     evt.preventDefault();
     const offerId = evt.target.id;
-    const targetOffer = this._state.offers.find((offer) => offer.id === +offerId);
-    targetOffer.isSelected = evt.target.checked;
+    const offers = this._state.offers.map((offer) => offer.id === +offerId
+      ? {
+        ...offer,
+        isSelected: evt.target.checked
+      }
+      : offer);
+
+    this._setState({ offers });
   };
 
   #setInnerHandlers = () => {
     this.element.querySelector('.event__input--price').addEventListener('input', this.#editPriceHandler);
     this.element.querySelector('.event__input--destination').addEventListener('input', this.#editDestinationHandler);
-    if (this._state.hasOffers) {
+    if (this._state.offers.length !== 0) {
       this.element.querySelector('.event__available-offers').addEventListener('change', this.#editOffersHandler);
     }
   };
 
   _restoreHandlers = () => {
+    this.#setDatepicker();
     this.#setInnerHandlers();
     this.setUpdateEventHandler(this._callback.updateEventClick);
     this.setCloseEditFormHandler(this._callback.closeEditFormClick);
