@@ -1,5 +1,19 @@
-import AbstractView from '../framework/view/abstract-view';
 import {humanizeEditTime} from '../utils/common';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view';
+import flatpickr from 'flatpickr';
+
+import 'flatpickr/dist/flatpickr.min.css';
+
+const BLANK_EVENT = {
+  totalPrice: '',
+  fromDate: '',
+  toDate: '',
+  destination: '',
+  id: '',
+  isFavorite: '',
+  offers: '',
+  type: 'bus',
+};
 
 const createPicturesTemplate = (pictures) => {
   const picturesList = pictures.reduce((accumulator, picture) => `${accumulator  }<img class="event__photo" src="${picture.src}" alt="Event photo">`, '');
@@ -28,8 +42,8 @@ const createOffersTemplate = (offers) => {
   let offerTemplate = '';
   offers.forEach((offer) => {
     offerTemplate += `<div class="event__offer-selector">
-                        <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" ${ifOfferSelected(offer)}>
-                        <label class="event__offer-label" for="event-offer-luggage-1">
+                        <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage" ${ifOfferSelected(offer)}>
+                        <label class="event__offer-label" for="${offer.id}">
                           <span class="event__offer-title">${offer.title}</span>
                           &plus;&euro;&nbsp;
                           <span class="event__offer-price">${offer.price}</span>
@@ -44,31 +58,21 @@ const createOffersTemplate = (offers) => {
           </section>`;
 };
 
-const createEditEventTemplate = (event) => {
+const createEditEventTemplate = (data) => {
+  const {type, fromDate, toDate, offers, destination, totalPrice} = data;
 
   let destinationTemplate = '';
   let offersTemplate = '';
 
-  const eventNew = event ?? {
-    totalPrice: '',
-    fromDate: '',
-    toDate: '',
-    destination: '',
-    id: '',
-    isFavorite: '',
-    offers: '',
-    type: 'bus',
-  };
+  const startTime = humanizeEditTime(fromDate);
+  const endTime = humanizeEditTime(toDate);
 
-  const startTime = humanizeEditTime(event.fromDate);
-  const endTime = humanizeEditTime(event.toDate);
-
-  if (eventNew.destination.description || eventNew.destination.pictures) {
-    destinationTemplate = createDestinationTemplate(eventNew.destination);
+  if (data.destination.description || data.destination.pictures) {
+    destinationTemplate = createDestinationTemplate(destination);
   }
 
-  if (eventNew.offers) {
-    offersTemplate = createOffersTemplate(eventNew.offers);
+  if (data.offers.length !== 0) {
+    offersTemplate = createOffersTemplate(offers);
   }
 
   return `<li class="trip-events__item">
@@ -77,7 +81,7 @@ const createEditEventTemplate = (event) => {
       <div class="event__type-wrapper">
         <label class="event__type  event__type-btn" for="event-type-toggle-1">
           <span class="visually-hidden">Choose event type</span>
-          <img class="event__type-icon" width="17" height="17" src="img/icons/${eventNew.type}.png" alt="Event type icon">
+          <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
         </label>
         <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
@@ -135,9 +139,9 @@ const createEditEventTemplate = (event) => {
 
       <div class="event__field-group  event__field-group--destination">
         <label class="event__label  event__type-output" for="event-destination-1">
-          ${eventNew.type}
+          ${type}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${eventNew.destination.name}" list="destination-list-1">
+        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
         <datalist id="destination-list-1">
           <option value="Amsterdam"></option>
           <option value="Geneva"></option>
@@ -158,7 +162,7 @@ const createEditEventTemplate = (event) => {
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${eventNew.totalPrice}">
+        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${totalPrice}">
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -174,17 +178,78 @@ const createEditEventTemplate = (event) => {
 </li>`;
 };
 
-export default class EditEventView extends AbstractView{
-  #event = null;
+export default class EditEventView extends AbstractStatefulView{
 
-  constructor(event) {
+  #fromDatepicker = null;
+  #toDatepicker = null;
+
+  constructor(event = BLANK_EVENT) {
     super();
-    this.#event = event;
+    this._state = this.#convertEventToStatement(event);
+
+    this.#setDatepicker();
+    this.#setInnerHandlers();
   }
 
   get template() {
-    return createEditEventTemplate(this.#event);
+    return createEditEventTemplate(this._state);
   }
+
+  removeElement = () => {
+    super.removeElement();
+
+    if (this.#fromDatepicker) {
+      this.#fromDatepicker.destroy();
+      this.#fromDatepicker = null;
+    }
+    if (this.#toDatepicker) {
+      this.#toDatepicker.destroy();
+      this.#toDatepicker = null;
+    }
+  };
+
+  #setDatepicker = () => {
+    this.#fromDatepicker = flatpickr(
+      this.element.querySelectorAll('#event-start-time-1'),
+      {
+        enableTime: true,
+        'time_24hr': true,
+        maxDate: this._state.toDate,
+        dateFormat: 'd/m/y H:i',
+        defaultDate: this._state.fromDate,
+        onChange: this.#editFromDateHandler,
+      },
+    );
+    this.#toDatepicker = flatpickr(
+      this.element.querySelectorAll('#event-end-time-1'),
+      {
+        enableTime: true,
+        'time_24hr': true,
+        minDate: this._state.fromDate,
+        dateFormat: 'd/m/y H:i',
+        defaultDate: this._state.toDate,
+        onChange: this.#editToDateHandler,
+      },
+    );
+  };
+
+  #convertEventToStatement = (event) => ({...event});
+
+  #convertStatementToEvent = () => ({...this._state});
+
+  reset = (event) => this.updateElement(this.#convertEventToStatement(event));
+
+  #editFromDateHandler = ([userDate]) => {
+    this.updateElement({
+      fromDate: userDate,
+    });
+  };
+
+  #editToDateHandler = ([userDate]) => {
+    this.updateElement({
+      toDate: userDate,
+    });
+  };
 
   setCloseEditFormHandler = (cb) => {
     this._callback.closeEditFormClick = cb;
@@ -203,6 +268,44 @@ export default class EditEventView extends AbstractView{
 
   #updateEventHadler = (evt) => {
     evt.preventDefault();
-    this._callback.updateEventClick(this.#event);
+    this._callback.updateEventClick(this.#convertStatementToEvent());
+  };
+
+  #editPriceHandler = (evt) => {
+    evt.preventDefault();
+    this._setState({totalPrice : evt.target.value});
+  };
+
+  #editDestinationHandler = (evt) => {
+    evt.preventDefault();
+    this._setState({destination : {name : evt.target.value}});
+  };
+
+  #editOffersHandler = (evt) => {
+    evt.preventDefault();
+    const offerId = evt.target.id;
+    const offers = this._state.offers.map((offer) => offer.id === +offerId
+      ? {
+        ...offer,
+        isSelected: evt.target.checked
+      }
+      : offer);
+
+    this._setState({ offers });
+  };
+
+  #setInnerHandlers = () => {
+    this.element.querySelector('.event__input--price').addEventListener('input', this.#editPriceHandler);
+    this.element.querySelector('.event__input--destination').addEventListener('input', this.#editDestinationHandler);
+    if (this._state.offers.length !== 0) {
+      this.element.querySelector('.event__available-offers').addEventListener('change', this.#editOffersHandler);
+    }
+  };
+
+  _restoreHandlers = () => {
+    this.#setDatepicker();
+    this.#setInnerHandlers();
+    this.setUpdateEventHandler(this._callback.updateEventClick);
+    this.setCloseEditFormHandler(this._callback.closeEditFormClick);
   };
 }
