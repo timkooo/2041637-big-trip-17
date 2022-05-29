@@ -1,6 +1,7 @@
 import EventView from '../view/event-view';
 import {remove, render, replace} from '../framework/render';
 import EditEventView from '../view/edit-event-view';
+import {UserAction, UpdateType} from '../utils/const';
 
 const EventMode = {
   DEFAULT : 'default',
@@ -14,13 +15,13 @@ export default class EventPresenter {
   #eventsListComponent = null;
   #eventMode = EventMode.DEFAULT;
 
-  #modeChangeFunc = null;
-  #dataUpdateFunc = null;
+  #viewModeChangeFunc = null;
+  #eventsChangeFunc = null;
 
-  constructor(eventListComponent, modeChangeFunc, dataUpdateFunc) {
+  constructor(eventListComponent, modeChangeFunc, eventsChangeFunc) {
     this.#eventsListComponent = eventListComponent;
-    this.#modeChangeFunc = modeChangeFunc;
-    this.#dataUpdateFunc = dataUpdateFunc;
+    this.#viewModeChangeFunc = modeChangeFunc;
+    this.#eventsChangeFunc = eventsChangeFunc;
   }
 
   init(event) {
@@ -30,11 +31,12 @@ export default class EventPresenter {
     const prevEditEventComponent = this.#editEventComponent;
 
     this.#eventComponent = new EventView(this.#event);
-    this.#editEventComponent = new EditEventView(this.#event);
+    this.#editEventComponent = new EditEventView(this.#event, 'edit');
 
     this.#eventComponent.setUpdateEventFavoriteHandler(this.#updateEventFavoriteHandler);
     this.#editEventComponent.setCloseEditFormHandler(this.#closeEditFormHandler);
     this.#editEventComponent.setUpdateEventHandler(this.#updateEventDataHandler);
+    this.#editEventComponent.setDeleteEventHandler(this.#deleteEventHandler);
 
     this.#eventComponent.element.dataset.eventId = this.#event.id;
     this.#editEventComponent.element.dataset.eventId = this.#event.id;
@@ -71,7 +73,7 @@ export default class EventPresenter {
   showEditForm = () => {
     replace(this.#editEventComponent, this.#eventComponent);
     document.addEventListener('keydown', this.#onEscKeyDown);
-    this.#modeChangeFunc();
+    this.#viewModeChangeFunc();
     this.#eventMode = EventMode.EDITING;
   };
 
@@ -89,11 +91,24 @@ export default class EventPresenter {
   };
 
   #updateEventFavoriteHandler = (event) => {
-    this.#dataUpdateFunc({...event, isFavorite : !event.isFavorite});
+    this.#eventsChangeFunc(
+      UserAction.UPDATE_EVENT,
+      UpdateType.MINOR,
+      {...event, isFavorite : !event.isFavorite});
   };
 
   #updateEventDataHandler = (event) => {
-    this.#dataUpdateFunc(event);
+    this.#eventsChangeFunc(
+      UserAction.UPDATE_EVENT,
+      UpdateType.MINOR,
+      event);
     this.#closeEditFormHandler();
+  };
+
+  #deleteEventHandler = (event) => {
+    this.#eventsChangeFunc(
+      UserAction.DELETE_EVENT,
+      UpdateType.MINOR,
+      event);
   };
 }

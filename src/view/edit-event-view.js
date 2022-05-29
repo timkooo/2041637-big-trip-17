@@ -4,14 +4,27 @@ import flatpickr from 'flatpickr';
 
 import 'flatpickr/dist/flatpickr.min.css';
 
+const EditMode = {
+  EDIT : 'edit',
+  NEW : 'new',
+};
+
+const editModeTemplate = {
+  [EditMode.EDIT]: ` <button class="event__reset-btn" type="reset">Delete</button>
+                  <button class="event__rollup-btn" type="button">
+                    <span class="visually-hidden">Open event</span>
+                  </button>`,
+  [EditMode.NEW]: '<button class="event__reset-btn" type="reset">Cancel</button>'
+};
+
 const BLANK_EVENT = {
   totalPrice: '',
-  fromDate: '',
-  toDate: '',
+  fromDate: new Date(),
+  toDate: new Date(),
   destination: '',
   id: '',
-  isFavorite: '',
-  offers: '',
+  isFavorite: null,
+  offers: [],
   type: 'bus',
 };
 
@@ -58,7 +71,7 @@ const createOffersTemplate = (offers) => {
           </section>`;
 };
 
-const createEditEventTemplate = (data) => {
+const createEditEventTemplate = (data, editMode) => {
   const {type, fromDate, toDate, offers, destination, totalPrice} = data;
 
   let destinationTemplate = '';
@@ -166,7 +179,9 @@ const createEditEventTemplate = (data) => {
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-      <button class="event__reset-btn" type="reset">Cancel</button>
+
+      ${editModeTemplate[editMode]}
+
     </header>
     <section class="event__details">
 
@@ -182,17 +197,19 @@ export default class EditEventView extends AbstractStatefulView{
 
   #fromDatepicker = null;
   #toDatepicker = null;
+  #currentEditMode = null;
 
-  constructor(event = BLANK_EVENT) {
+  constructor(event = BLANK_EVENT, editMode) {
     super();
     this._state = this.#convertEventToStatement(event);
+    this.#currentEditMode = editMode;
 
     this.#setDatepicker();
     this.#setInnerHandlers();
   }
 
   get template() {
-    return createEditEventTemplate(this._state);
+    return createEditEventTemplate(this._state, this.#currentEditMode);
   }
 
   removeElement = () => {
@@ -214,7 +231,7 @@ export default class EditEventView extends AbstractStatefulView{
       {
         enableTime: true,
         'time_24hr': true,
-        maxDate: this._state.toDate,
+        //minDate: this._state.toDate,
         dateFormat: 'd/m/y H:i',
         defaultDate: this._state.fromDate,
         onChange: this.#editFromDateHandler,
@@ -253,7 +270,17 @@ export default class EditEventView extends AbstractStatefulView{
 
   setCloseEditFormHandler = (cb) => {
     this._callback.closeEditFormClick = cb;
-    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#closeEditFormHandler);
+    if (this.#currentEditMode === EditMode.NEW) {
+      this.element.querySelector('.event__reset-btn').addEventListener('click', this.#closeEditFormHandler);
+    }
+    if (this.#currentEditMode === EditMode.EDIT) {
+      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#closeEditFormHandler);
+    }
+  };
+
+  setDeleteEventHandler = (cb) => {
+    this._callback.deleteEventClick = cb;
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteEventHandler);
   };
 
   setUpdateEventHandler = (cb) => {
@@ -266,6 +293,11 @@ export default class EditEventView extends AbstractStatefulView{
     this._callback.closeEditFormClick();
   };
 
+  #deleteEventHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.deleteEventClick(this.#convertStatementToEvent());
+  };
+
   #updateEventHadler = (evt) => {
     evt.preventDefault();
     this._callback.updateEventClick(this.#convertStatementToEvent());
@@ -273,7 +305,7 @@ export default class EditEventView extends AbstractStatefulView{
 
   #editPriceHandler = (evt) => {
     evt.preventDefault();
-    this._setState({totalPrice : evt.target.value});
+    this._setState({totalPrice : +evt.target.value});
   };
 
   #editDestinationHandler = (evt) => {
