@@ -38,7 +38,6 @@ export default class TripPresenter {
   }
 
   init = () => {
-    this.#renderSortComponent();
     this.#renderEventsList();
   };
 
@@ -64,6 +63,7 @@ export default class TripPresenter {
     if (this.#eventsListEmptyComponent !== null) {
       remove(this.#eventsListEmptyComponent);
     }
+    remove(this.#sortingComponent);
     this.#newEventPresenter.destroy();
     this.#eventPresentersList.forEach((presenter) => presenter.destroy());
     this.#eventPresentersList.clear();
@@ -75,6 +75,7 @@ export default class TripPresenter {
       render(this.#eventsListEmptyComponent, this.#tripContainer, RenderPosition.BEFOREEND);
       return;
     }
+    this.#renderSortComponent();
     this.#renderEvents();
   };
 

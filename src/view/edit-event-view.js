@@ -290,6 +290,7 @@ export default class EditEventView extends AbstractStatefulView{
 
   #closeEditFormHandler = (evt) => {
     evt.preventDefault();
+    evt.stopPropagation();
     this._callback.closeEditFormClick();
   };
 

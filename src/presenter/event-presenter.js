@@ -98,9 +98,12 @@ export default class EventPresenter {
   };
 
   #updateEventDataHandler = (event) => {
+    const isMinorUpdate = (this.#event.fromDate !== event.fromDate) ||
+      (this.#event.toDate !== event.toDate) || (this.#event.totalPrice !== event.fromDate.totalPrice) ||
+      (this.#event.offers.filter((offer) => offer.isSelected === true).length !== event.offers.filter((offer) => offer.isSelected === true).length);
     this.#eventsChangeFunc(
       UserAction.UPDATE_EVENT,
-      UpdateType.MINOR,
+      isMinorUpdate? UpdateType.MINOR : UpdateType.PATCH,
       event);
     this.#closeEditFormHandler();
   };
