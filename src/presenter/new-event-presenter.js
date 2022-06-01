@@ -3,17 +3,32 @@ import {remove, render, replace} from '../framework/render';
 import {UpdateType, UserAction} from '../utils/const';
 import {RenderPosition} from '../framework/render';
 import {nanoid} from 'nanoid';
+import {EditMode} from '../utils/const';
 
+const defualtEvent = {
+  totalPrice: '',
+  fromDate: new Date(),
+  toDate: new Date(),
+  destination: {
+    name: 'Moscow',
+  },
+  id: '',
+  isFavorite: null,
+  offers: [],
+  type: 'bus',
+};
 
 export default class NewEventPresenter {
   #newEventContainer = null;
   #newEventComponent = null;
   #changeDataFunc = null;
   #destroyCallback = null;
+  #changeEventTypeFunc = null;
 
-  constructor(newEventContainer, changeDataFunc) {
+  constructor(newEventContainer, changeDataFunc, changeEventTypeFunc) {
     this.#newEventContainer = newEventContainer;
     this.#changeDataFunc = changeDataFunc;
+    this.#changeEventTypeFunc = changeEventTypeFunc;
   }
 
   init = (callback) => {
@@ -21,10 +36,11 @@ export default class NewEventPresenter {
 
     const prevNewEventComponent = this.#newEventComponent;
 
-    this.#newEventComponent = new EditEventView(undefined, 'new');
+    this.#newEventComponent = new EditEventView({...defualtEvent, offers: this.#changeEventTypeFunc(defualtEvent.type)}, EditMode.NEW);
 
     this.#newEventComponent.setUpdateEventHandler(this.#addNewEventHandler);
     this.#newEventComponent.setCloseEditFormHandler(this.#closeEditFormHandler);
+    this.#newEventComponent.setChangeEventTypeHandler(this.#changeEventTypeFunc);
 
     if (prevNewEventComponent === null) {
       render(this.#newEventComponent, this.#newEventContainer.element, RenderPosition.AFTERBEGIN);

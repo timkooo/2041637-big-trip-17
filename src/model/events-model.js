@@ -1,21 +1,27 @@
-import {createEvent} from '../mock/event';
+import {createEvent, getOffersList} from '../mock/event';
 import {createOffersList} from '../mock/event';
 import Observable from '../framework/observable';
 
-export default class EventsModel extends Observable{
+export default class EventsModel extends Observable {
   #events = null;
+  #offers = null;
 
   constructor() {
     super();
     createOffersList();
+    this.#offers = getOffersList();
     this.#events = Array.from({length: 20}, createEvent);
+  }
+
+  get offers() {
+    return this.#offers;
   }
 
   get events() {
     return this.#events;
   }
 
-  updateEvent = (updateType, update) => {
+  update = (updateType, update) => {
     const index = this.#events.findIndex((event) => event.id === update.id);
 
     if (index === -1) {
@@ -31,7 +37,7 @@ export default class EventsModel extends Observable{
     this._notify(updateType, update);
   };
 
-  addEvent = (updateType, update) => {
+  add = (updateType, update) => {
     this.#events = [
       update,
       ...this.#events,
@@ -40,7 +46,7 @@ export default class EventsModel extends Observable{
     this._notify(updateType, update);
   };
 
-  deleteEvent = (updateType, update) => {
+  delete = (updateType, update) => {
     const index = this.#events.findIndex((event) => event.id === update.id);
 
     if (index === -1) {

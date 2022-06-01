@@ -21,13 +21,13 @@ filterPresenter.init();
 tripPresenter.init();
 
 const closeNewEventFormHandler = () => {
-  addEventButton.desabled = false;
+  addEventButton.disabled = false;
 };
 
 const openNewEventFormHandler = (evt) => {
   evt.preventDefault();
   tripPresenter.addNewEvent(closeNewEventFormHandler);
-  addEventButton.desabled = true;
+  addEventButton.disabled = true;
 };
 
 addEventButton.addEventListener('click', openNewEventFormHandler);

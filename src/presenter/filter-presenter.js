@@ -40,7 +40,7 @@ export default class FilterPresenter {
     if (newFilter === this.#filterModel.filter) {
       return;
     }
-    this.#filterModel.setFilter(UpdateType.MAJOR, newFilter);
+    this.#filterModel.setFilter(UpdateType.MINOR, newFilter);
   };
 
   #modelEventHandler = () => {

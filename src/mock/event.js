@@ -56,6 +56,8 @@ const eventTypeToOffersList = {
   'drive': offersTaxi,
   'check-in': offersRestaurant,
   'sightseeing': offersRestaurant,
+  'ship': offersTaxi,
+  'flight': offersTaxi,
 };
 
 const getDestinationName = () => {
@@ -84,6 +86,8 @@ const createOffersList = () => {
     return offerTypeList.forEach((offerType) => offersList.push(createOffersByType(offerType)));
   }
 };
+
+const getOffersList = () => offersList;
 
 const sortOffers = (offer1, offer2) => {
   if (offer1.isSelected === offer2.isSelected) {
@@ -149,4 +153,4 @@ const createEvent = () => {
   };
 };
 
-export {createEvent, createOffersList};
+export {createEvent, createOffersList, getOffersList};

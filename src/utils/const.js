@@ -4,11 +4,15 @@ const UserAction = {
   DELETE_EVENT: 'DELETE_EVENT',
 };
 
+const EditMode = {
+  NEW : 'new',
+  EDIT : 'edit',
+};
+
 const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
-  MAJOR: 'MAJOR',
 };
 
-export {UserAction, UpdateType};
+export {UserAction, UpdateType, EditMode};
 

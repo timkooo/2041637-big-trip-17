@@ -2,6 +2,7 @@ import EventView from '../view/event-view';
 import {remove, render, replace} from '../framework/render';
 import EditEventView from '../view/edit-event-view';
 import {UserAction, UpdateType} from '../utils/const';
+import {EditMode} from '../utils/const';
 
 const EventMode = {
   DEFAULT : 'default',
@@ -17,11 +18,13 @@ export default class EventPresenter {
 
   #viewModeChangeFunc = null;
   #eventsChangeFunc = null;
+  #changeEventTypeFunc = null;
 
-  constructor(eventListComponent, modeChangeFunc, eventsChangeFunc) {
+  constructor(eventListComponent, modeChangeFunc, eventsChangeFunc, changeOfferTypeFunc) {
     this.#eventsListComponent = eventListComponent;
     this.#viewModeChangeFunc = modeChangeFunc;
     this.#eventsChangeFunc = eventsChangeFunc;
+    this.#changeEventTypeFunc = changeOfferTypeFunc;
   }
 
   init(event) {
@@ -31,12 +34,13 @@ export default class EventPresenter {
     const prevEditEventComponent = this.#editEventComponent;
 
     this.#eventComponent = new EventView(this.#event);
-    this.#editEventComponent = new EditEventView(this.#event, 'edit');
+    this.#editEventComponent = new EditEventView(this.#event, EditMode.EDIT);
 
     this.#eventComponent.setUpdateEventFavoriteHandler(this.#updateEventFavoriteHandler);
     this.#editEventComponent.setCloseEditFormHandler(this.#closeEditFormHandler);
     this.#editEventComponent.setUpdateEventHandler(this.#updateEventDataHandler);
     this.#editEventComponent.setDeleteEventHandler(this.#deleteEventHandler);
+    this.#editEventComponent.setChangeEventTypeHandler(this.#changeEventTypeFunc);
 
     this.#eventComponent.element.dataset.eventId = this.#event.id;
     this.#editEventComponent.element.dataset.eventId = this.#event.id;
