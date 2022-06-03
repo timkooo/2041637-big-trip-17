@@ -2,6 +2,7 @@ import {humanizeEditTime} from '../utils/common';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import flatpickr from 'flatpickr';
 import {EditMode} from '../utils/const';
+import {UpdateType} from '../utils/const';
 
 import 'flatpickr/dist/flatpickr.min.css';
 
@@ -206,6 +207,7 @@ export default class EditEventView extends AbstractStatefulView{
   #fromDatepicker = null;
   #toDatepicker = null;
   #currentEditMode = null;
+  #updateType = null;
 
   constructor(event = BLANK_EVENT, editMode) {
     super();
@@ -267,12 +269,18 @@ export default class EditEventView extends AbstractStatefulView{
     this.updateElement({
       fromDate: userDate,
     });
+    if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
+      this.#updateType = UpdateType.MINOR;
+    }
   };
 
   #editToDateHandler = ([userDate]) => {
     this.updateElement({
       toDate: userDate,
     });
+    if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
+      this.#updateType = UpdateType.MINOR;
+    }
   };
 
   setCloseEditFormHandler = (cb) => {
@@ -287,7 +295,9 @@ export default class EditEventView extends AbstractStatefulView{
 
   setDeleteEventHandler = (cb) => {
     this._callback.deleteEventClick = cb;
-    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteEventHandler);
+    if (this.#currentEditMode === EditMode.EDIT) {
+      this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteEventHandler);
+    }
   };
 
   setUpdateEventHandler = (cb) => {
@@ -323,17 +333,23 @@ export default class EditEventView extends AbstractStatefulView{
 
   #updateEventHadler = (evt) => {
     evt.preventDefault();
-    this._callback.updateEventClick(this.#convertStatementToEvent());
+    this._callback.updateEventClick(this.#updateType, this.#convertStatementToEvent());
   };
 
   #editPriceHandler = (evt) => {
     evt.preventDefault();
     this._setState({totalPrice : +evt.target.value});
+    if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
+      this.#updateType = UpdateType.MINOR;
+    }
   };
 
   #editDestinationHandler = (evt) => {
     evt.preventDefault();
     this._setState({destination : {name : evt.target.value}});
+    if (this.#updateType === null) {
+      this.#updateType = UpdateType.PATCH;
+    }
   };
 
   #editOffersHandler = (evt) => {
@@ -347,10 +363,18 @@ export default class EditEventView extends AbstractStatefulView{
       : offer);
 
     this._setState({ offers });
+    if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
+      this.#updateType = UpdateType.MINOR;
+    }
   };
 
   #setInnerHandlers = () => {
-    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteEventHandler);
+    if (this.#currentEditMode === EditMode.NEW) {
+      this.element.querySelector('.event__reset-btn').addEventListener('click', this.#closeEditFormHandler);
+    }
+    if (this.#currentEditMode === EditMode.EDIT) {
+      this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteEventHandler);
+    }
     this.element.querySelector('.event__input--price').addEventListener('input', this.#editPriceHandler);
     this.element.querySelector('.event__input--destination').addEventListener('input', this.#editDestinationHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#changeEventTypeHandler);

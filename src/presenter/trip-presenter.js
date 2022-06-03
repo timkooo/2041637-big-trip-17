@@ -28,7 +28,6 @@ export default class TripPresenter {
     this.#filterModel = filterModel;
     this.#newEventPresenter = new NewEventPresenter(this.#eventsListComponent, this.#eventsChangeHandler, this.#getOffersByType);
     this.#eventsModel.addObserver(this.#modelEventHadler);
-    this.#filterModel.addObserver(this.#modelEventHadler);
     this.#filterModel.addObserver(this.#resetSortingHandler);
   }
 

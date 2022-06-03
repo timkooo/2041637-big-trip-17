@@ -38,7 +38,7 @@ export default class EventPresenter {
 
     this.#eventComponent.setUpdateEventFavoriteHandler(this.#updateEventFavoriteHandler);
     this.#editEventComponent.setCloseEditFormHandler(this.#closeEditFormHandler);
-    this.#editEventComponent.setUpdateEventHandler(this.#updateEventDataHandler);
+    this.#editEventComponent.setUpdateEventHandler(this.#updateEventHandler);
     this.#editEventComponent.setDeleteEventHandler(this.#deleteEventHandler);
     this.#editEventComponent.setChangeEventTypeHandler(this.#changeEventTypeFunc);
 
@@ -101,13 +101,14 @@ export default class EventPresenter {
       {...event, isFavorite : !event.isFavorite});
   };
 
-  #updateEventDataHandler = (event) => {
-    const isMinorUpdate = (this.#event.fromDate !== event.fromDate) ||
-      (this.#event.toDate !== event.toDate) || (this.#event.totalPrice !== event.fromDate.totalPrice) ||
-      (this.#event.offers.filter((offer) => offer.isSelected === true).length !== event.offers.filter((offer) => offer.isSelected === true).length);
+  #updateEventHandler = (updateType, event) => {
+    // const isMinorUpdate = (this.#event.fromDate !== event.fromDate) ||
+    //   (this.#event.toDate !== event.toDate) || (this.#event.totalPrice !== event.fromDate.totalPrice) ||
+    //   (this.#event.offers.filter((offer) => offer.isSelected === true).length !== event.offers.filter((offer) => offer.isSelected === true).length);
     this.#eventsChangeFunc(
       UserAction.UPDATE_EVENT,
-      isMinorUpdate? UpdateType.MINOR : UpdateType.PATCH,
+      // isMinorUpdate? UpdateType.MINOR : UpdateType.PATCH,
+      updateType,
       event);
     this.#closeEditFormHandler();
   };
