@@ -1,6 +1,7 @@
 import TripInfoView from '../view/trip-info-view';
 import {remove, render, RenderPosition, replace} from '../framework/render';
 import {getTripInfo} from '../utils/common';
+import {UpdateType} from "../utils/const";
 
 export default class TripInfoPresenter {
   #tripInfoContainer = null;
@@ -32,14 +33,19 @@ export default class TripInfoPresenter {
     remove(this.#tripInfoComponent);
   };
 
-  #modelUpdateHandler = () => {
-    if (this.#eventsModel.events.length === 0) {
-      remove(this.#tripInfoComponent);
-      this.#prevTripInfoComponent = null;
-      this.#tripInfoComponent = null;
-      return;
-    }
-    this.init();
-  };
+  #modelUpdateHandler = (updateType) => {
+    switch (updateType) {
+      case UpdateType.PATCH:
+      case UpdateType.MINOR:
 
+        if (this.#eventsModel.events.length === 0) {
+          remove(this.#tripInfoComponent);
+          this.#prevTripInfoComponent = null;
+          this.#tripInfoComponent = null;
+          return;
+        }
+        this.init();
+        break;
+    }
+  };
 }

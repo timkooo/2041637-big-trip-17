@@ -43,7 +43,12 @@ export default class FilterPresenter {
     this.#filterModel.setFilter(UpdateType.MINOR, newFilter);
   };
 
-  #modelEventHandler = () => {
-    this.init();
+  #modelEventHandler = (updateType) => {
+    switch (updateType) {
+      case UpdateType.PATCH:
+      case UpdateType.MINOR:
+        this.init();
+        break;
+    }
   };
 }
