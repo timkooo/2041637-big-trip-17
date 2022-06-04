@@ -58,7 +58,7 @@ export default class NewEventPresenter {
       return;
     }
 
-    this.#destroyCallback?.();
+    this.#destroyCallback();
 
     remove(this.#newEventComponent);
     this.#newEventComponent = null;
