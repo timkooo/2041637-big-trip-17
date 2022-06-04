@@ -1,17 +1,39 @@
 import {humanizeEditTime} from '../utils/common';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import flatpickr from 'flatpickr';
+import {EditMode} from '../utils/const';
+import {UpdateType} from '../utils/const';
 
 import 'flatpickr/dist/flatpickr.min.css';
 
+const EventType = {
+  TAXI : 'taxi',
+  RESTAURANT : 'restaurant',
+  BUS : 'bus',
+  TRAIN : 'train',
+  DRIVE : 'drive',
+  CHECKIN : 'check-in',
+  SIGHTSEEING : 'sightseeing',
+  SHIP : 'ship',
+  FLIGHT : 'flight',
+};
+
+const editModeTemplate = {
+  [EditMode.EDIT]: ` <button class="event__reset-btn" type="reset">Delete</button>
+                  <button class="event__rollup-btn" type="button">
+                    <span class="visually-hidden">Open event</span>
+                  </button>`,
+  [EditMode.NEW]: '<button class="event__reset-btn" type="reset">Cancel</button>'
+};
+
 const BLANK_EVENT = {
   totalPrice: '',
-  fromDate: '',
-  toDate: '',
+  fromDate: new Date(),
+  toDate: new Date(),
   destination: '',
   id: '',
-  isFavorite: '',
-  offers: '',
+  isFavorite: null,
+  offers: [],
   type: 'bus',
 };
 
@@ -58,7 +80,7 @@ const createOffersTemplate = (offers) => {
           </section>`;
 };
 
-const createEditEventTemplate = (data) => {
+const createEditEventTemplate = (data, editMode) => {
   const {type, fromDate, toDate, offers, destination, totalPrice} = data;
 
   let destinationTemplate = '';
@@ -90,47 +112,47 @@ const createEditEventTemplate = (data) => {
             <legend class="visually-hidden">Event type</legend>
 
             <div class="event__type-item">
-              <input id="event-type-taxi-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="taxi">
+              <input id="event-type-taxi-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="taxi" ${type === EventType.TAXI ? 'checked' : ''}>
               <label class="event__type-label  event__type-label--taxi" for="event-type-taxi-1">Taxi</label>
             </div>
 
             <div class="event__type-item">
-              <input id="event-type-bus-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="bus">
+              <input id="event-type-bus-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="bus" ${type === EventType.BUS ? 'checked' : ''}>
               <label class="event__type-label  event__type-label--bus" for="event-type-bus-1">Bus</label>
             </div>
 
             <div class="event__type-item">
-              <input id="event-type-train-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="train">
+              <input id="event-type-train-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="train" ${type === EventType.TRAIN ? 'checked' : ''}>
               <label class="event__type-label  event__type-label--train" for="event-type-train-1">Train</label>
             </div>
 
             <div class="event__type-item">
-              <input id="event-type-ship-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="ship">
+              <input id="event-type-ship-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="ship" ${type === EventType.SHIP ? 'checked' : ''}>
               <label class="event__type-label  event__type-label--ship" for="event-type-ship-1">Ship</label>
             </div>
 
             <div class="event__type-item">
-              <input id="event-type-drive-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="drive">
+              <input id="event-type-drive-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="drive" ${type === EventType.DRIVE ? 'checked' : ''}>
               <label class="event__type-label  event__type-label--drive" for="event-type-drive-1">Drive</label>
             </div>
 
             <div class="event__type-item">
-              <input id="event-type-flight-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="flight" checked>
+              <input id="event-type-flight-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="flight" ${type === EventType.FLIGHT ? 'checked' : ''}>
               <label class="event__type-label  event__type-label--flight" for="event-type-flight-1">Flight</label>
             </div>
 
             <div class="event__type-item">
-              <input id="event-type-check-in-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="check-in">
+              <input id="event-type-check-in-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="check-in" ${type === EventType.CHECKIN ? 'checked' : ''}>
               <label class="event__type-label  event__type-label--check-in" for="event-type-check-in-1">Check-in</label>
             </div>
 
             <div class="event__type-item">
-              <input id="event-type-sightseeing-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="sightseeing">
+              <input id="event-type-sightseeing-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="sightseeing" ${type === EventType.SIGHTSEEING ? 'checked' : ''}>
               <label class="event__type-label  event__type-label--sightseeing" for="event-type-sightseeing-1">Sightseeing</label>
             </div>
 
             <div class="event__type-item">
-              <input id="event-type-restaurant-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="restaurant">
+              <input id="event-type-restaurant-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="restaurant" ${type === EventType.RESTAURANT ? 'checked' : ''}>
               <label class="event__type-label  event__type-label--restaurant" for="event-type-restaurant-1">Restaurant</label>
             </div>
           </fieldset>
@@ -162,11 +184,13 @@ const createEditEventTemplate = (data) => {
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${totalPrice}">
+        <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${totalPrice}">
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-      <button class="event__reset-btn" type="reset">Cancel</button>
+
+      ${editModeTemplate[editMode]}
+
     </header>
     <section class="event__details">
 
@@ -182,17 +206,20 @@ export default class EditEventView extends AbstractStatefulView{
 
   #fromDatepicker = null;
   #toDatepicker = null;
+  #currentEditMode = null;
+  #updateType = null;
 
-  constructor(event = BLANK_EVENT) {
+  constructor(event = BLANK_EVENT, editMode) {
     super();
     this._state = this.#convertEventToStatement(event);
+    this.#currentEditMode = editMode;
 
     this.#setDatepicker();
     this.#setInnerHandlers();
   }
 
   get template() {
-    return createEditEventTemplate(this._state);
+    return createEditEventTemplate(this._state, this.#currentEditMode);
   }
 
   removeElement = () => {
@@ -214,7 +241,6 @@ export default class EditEventView extends AbstractStatefulView{
       {
         enableTime: true,
         'time_24hr': true,
-        maxDate: this._state.toDate,
         dateFormat: 'd/m/y H:i',
         defaultDate: this._state.fromDate,
         onChange: this.#editFromDateHandler,
@@ -243,17 +269,35 @@ export default class EditEventView extends AbstractStatefulView{
     this.updateElement({
       fromDate: userDate,
     });
+    if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
+      this.#updateType = UpdateType.MINOR;
+    }
   };
 
   #editToDateHandler = ([userDate]) => {
     this.updateElement({
       toDate: userDate,
     });
+    if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
+      this.#updateType = UpdateType.MINOR;
+    }
   };
 
   setCloseEditFormHandler = (cb) => {
     this._callback.closeEditFormClick = cb;
-    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#closeEditFormHandler);
+    if (this.#currentEditMode === EditMode.NEW) {
+      this.element.querySelector('.event__reset-btn').addEventListener('click', this.#closeEditFormHandler);
+    }
+    if (this.#currentEditMode === EditMode.EDIT) {
+      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#closeEditFormHandler);
+    }
+  };
+
+  setDeleteEventHandler = (cb) => {
+    this._callback.deleteEventClick = cb;
+    if (this.#currentEditMode === EditMode.EDIT) {
+      this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteEventHandler);
+    }
   };
 
   setUpdateEventHandler = (cb) => {
@@ -261,24 +305,51 @@ export default class EditEventView extends AbstractStatefulView{
     this.element.querySelector('form').addEventListener('submit', this.#updateEventHadler);
   };
 
+  setChangeEventTypeHandler = (cb) => {
+    this._callback.chageEventTypeClick = cb;
+    this.element.querySelector('.event__type-group').addEventListener('change', this.#changeEventTypeHandler);
+  };
+
+  #changeEventTypeHandler = (evt) => {
+    if (evt.target.closest('.event__type-input')) {
+      evt.preventDefault();
+      this.updateElement({
+        type : evt.target.value,
+        offers : this._callback.chageEventTypeClick(evt.target.value),
+      });
+    }
+  };
+
   #closeEditFormHandler = (evt) => {
     evt.preventDefault();
+    evt.stopPropagation();
     this._callback.closeEditFormClick();
+  };
+
+  #deleteEventHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.deleteEventClick(this.#convertStatementToEvent());
   };
 
   #updateEventHadler = (evt) => {
     evt.preventDefault();
-    this._callback.updateEventClick(this.#convertStatementToEvent());
+    this._callback.updateEventClick(this.#updateType, this.#convertStatementToEvent());
   };
 
   #editPriceHandler = (evt) => {
     evt.preventDefault();
-    this._setState({totalPrice : evt.target.value});
+    this._setState({totalPrice : +evt.target.value});
+    if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
+      this.#updateType = UpdateType.MINOR;
+    }
   };
 
   #editDestinationHandler = (evt) => {
     evt.preventDefault();
     this._setState({destination : {name : evt.target.value}});
+    if (this.#updateType === null) {
+      this.#updateType = UpdateType.PATCH;
+    }
   };
 
   #editOffersHandler = (evt) => {
@@ -292,11 +363,21 @@ export default class EditEventView extends AbstractStatefulView{
       : offer);
 
     this._setState({ offers });
+    if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
+      this.#updateType = UpdateType.MINOR;
+    }
   };
 
   #setInnerHandlers = () => {
+    if (this.#currentEditMode === EditMode.NEW) {
+      this.element.querySelector('.event__reset-btn').addEventListener('click', this.#closeEditFormHandler);
+    }
+    if (this.#currentEditMode === EditMode.EDIT) {
+      this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteEventHandler);
+    }
     this.element.querySelector('.event__input--price').addEventListener('input', this.#editPriceHandler);
     this.element.querySelector('.event__input--destination').addEventListener('input', this.#editDestinationHandler);
+    this.element.querySelector('.event__type-group').addEventListener('change', this.#changeEventTypeHandler);
     if (this._state.offers.length !== 0) {
       this.element.querySelector('.event__available-offers').addEventListener('change', this.#editOffersHandler);
     }

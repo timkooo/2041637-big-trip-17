@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
+import {sorting, SortingTypes} from './sorting';
 
 const humanizeDate = (date) => dayjs(date).format('MMM DD');
 const humanizeTime = (date) => dayjs(date).format('HH:mm');
@@ -28,18 +29,39 @@ const getRandomInteger = (a = 0, b = 1) => {
   return Math.floor(lower + Math.random() * (upper - lower + 1));
 };
 
-const updateItem = (items, update) => {
-  const index = items.findIndex((item) => item.id === update.id);
+const getTripInfo = (tripEvents) => {
+  const events = [...tripEvents].sort(sorting[SortingTypes.DAY]);
 
-  if (index === -1) {
-    return items;
-  }
+  const getOffersPrice = (event) => {
+    if (event.offers.length === 0) {
+      return 0;
+    }
+    const selectedOffers = event.offers.filter((offer) => offer.isSelected === true);
+    return selectedOffers.reduce((accumulator, offer) => accumulator + +offer.price, 0);
+  };
 
-  return [
-    ...items.slice(0, index),
-    update,
-    ...items.slice(index + 1),
-  ];
+  const getTripPrice = () => events.reduce((accumulator, event) => accumulator + +event.totalPrice + +getOffersPrice(event), 0);
+
+  const getThirdDestination = () => {
+    if (events.length > 3) {
+      return ' &mdash;&nbsp;&nbsp;.&nbsp;.&nbsp;.&nbsp;&nbsp;&mdash; ';
+    }
+    if (events.length === 3) {
+      return ` &mdash; ${events[1].destination.name} &mdash; `;
+    }
+    if (events.length < 2) {
+      return ' &mdash; ';
+    }
+  };
+
+  return {
+    fromDestination: events[0] ? events[0].destination.name : '',
+    toDestination: events.length >= 2 ? events[events.length - 1].destination.name : '.&nbsp;.&nbsp;.',
+    thirdDestination: getThirdDestination(),
+    fromDate: events[0].fromDate,
+    toDate: events[events.length - 1].toDate,
+    tripPrice: getTripPrice(),
+  };
 };
 
-export {getRandomInteger, humanizeDate, getDuration, humanizeTime, updateItem, humanizeEditTime};
+export {getRandomInteger, humanizeDate, getDuration, humanizeTime, humanizeEditTime, getTripInfo};
