@@ -7,6 +7,7 @@ import {UserAction, UpdateType} from '../utils/const';
 import {filter, FilterTypes} from '../utils/filter';
 import {sorting, SortingTypes} from '../utils/sorting';
 import NewEventPresenter from './new-event-presenter';
+import LoadingView from '../view/loading-view';
 
 export default class TripPresenter {
   #tripContainer = null;
@@ -19,6 +20,9 @@ export default class TripPresenter {
   #currentFilter = null;
   #currentSorting = SortingTypes.DAY;
   #newEventPresenter = null;
+  #isLoading = true;
+  #loadingComponent = new LoadingView();
+
 
   constructor(tripContainer, eventsModel, filterModel) {
     this.#tripContainer = tripContainer;
@@ -71,12 +75,18 @@ export default class TripPresenter {
       remove(this.#eventsListEmptyComponent);
     }
     remove(this.#sortingComponent);
+    remove(this.#loadingComponent);
     this.#newEventPresenter.destroy();
     this.#eventPresentersList.forEach((presenter) => presenter.destroy());
     this.#eventPresentersList.clear();
   };
 
   #renderEventsList = () => {
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
     if (this.events.length === 0) {
       this.#eventsListEmptyComponent = new EventsListEmptyView(this.#currentFilter);
       render(this.#eventsListEmptyComponent, this.#tripContainer, RenderPosition.BEFOREEND);
@@ -84,6 +94,10 @@ export default class TripPresenter {
     }
     this.#renderSortComponent();
     this.#renderEvents();
+  };
+
+  #renderLoading = () => {
+    render(this.#loadingComponent, this.#tripContainer, RenderPosition.AFTERBEGIN);
   };
 
   #eventsChangeHandler = (actionType, updateType, update) => {
@@ -96,7 +110,6 @@ export default class TripPresenter {
         break;
       case UserAction.DELETE_EVENT:
         this.#eventsModel.delete(updateType, update);
-        break;
     }
   };
 
@@ -107,6 +120,11 @@ export default class TripPresenter {
         break;
       case UpdateType.MINOR:
         this.#reRenderEventsList();
+        break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderEventsList();
         break;
     }
   };

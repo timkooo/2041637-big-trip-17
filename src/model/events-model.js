@@ -1,17 +1,36 @@
 import {createEvent, getOffersList} from '../mock/event';
 import {createOffersList} from '../mock/event';
 import Observable from '../framework/observable';
+import {nanoid} from "nanoid";
+import {getRandomInteger} from "../utils/common";
+import {UpdateType} from '../utils/const';
 
 export default class EventsModel extends Observable {
+  #eventsApiService = null;
   #events = null;
   #offers = null;
 
-  constructor() {
+  constructor(eventsApiService) {
     super();
-    createOffersList();
+    this.#eventsApiService = eventsApiService;
+
+    /*    createOffersList();
     this.#offers = getOffersList();
-    this.#events = Array.from({length: 20}, createEvent);
+    this.#events = Array.from({length: 20}, createEvent);*/
   }
+
+  init = async () => {
+    try {
+      const events = await this.#eventsApiService.events;
+      this.#offers = await this.#eventsApiService.offers;
+      console.log(events);
+      this.#events = events.map((event) => this.#adaptToClient(event, this.#offers));
+    }
+    catch(err) {
+      this.#events = [];
+    }
+    this._notify(UpdateType.INIT);
+  };
 
   get offers() {
     return this.#offers;
@@ -21,20 +40,29 @@ export default class EventsModel extends Observable {
     return this.#events;
   }
 
-  update = (updateType, update) => {
+  update = async (updateType, update) => {
     const index = this.#events.findIndex((event) => event.id === update.id);
 
     if (index === -1) {
       throw new Error('Can\'t update unexisting task');
     }
 
-    this.#events = [
-      ...this.#events.slice(0, index),
-      update,
-      ...this.#events.slice(index + 1),
-    ];
-
-    this._notify(updateType, update);
+    try {
+      const response = await this.#eventsApiService.updateEvent(update);
+      console.log(response);
+      const updatedEvent = this.#adaptToClient(response, this.#offers);
+      console.log(`updated event : ${updatedEvent}`);
+      this.#events = [
+        ...this.#events.slice(0, index),
+        updatedEvent,
+        ...this.#events.slice(index + 1),
+      ];
+      this._notify(updateType, updatedEvent);
+    }
+    catch (err) {
+      console.log(err);
+      throw new Error('Can\'t update task');
+    }
   };
 
   add = (updateType, update) => {
@@ -59,5 +87,27 @@ export default class EventsModel extends Observable {
     ];
 
     this._notify(updateType);
+  };
+
+  #adaptClientOffers = (event, offers) => {
+    const offersByType = offers.find((offer) => offer.type === event.type);
+    return offersByType.offers.map((offer) => ({...offer, isSelected : event.offers.includes(offer.id)}));
+  };
+
+  #adaptToClient = (event, offers) => {
+    const adaptedEvent = {...event,
+      totalPrice: event['base_price'],
+      fromDate : event['date_from'],
+      toDate : event['date_to'],
+      isFavorite : event['is_favorite'],
+      offers : this.#adaptClientOffers(event, offers),
+    };
+
+    delete adaptedEvent['base_price'];
+    delete adaptedEvent['date_from'];
+    delete adaptedEvent['date_to'];
+    delete adaptedEvent['is_favorite'];
+
+    return adaptedEvent;
   };
 }
