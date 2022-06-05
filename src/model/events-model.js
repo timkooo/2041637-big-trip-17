@@ -1,8 +1,4 @@
-import {createEvent, getOffersList} from '../mock/event';
-import {createOffersList} from '../mock/event';
 import Observable from '../framework/observable';
-import {nanoid} from "nanoid";
-import {getRandomInteger} from "../utils/common";
 import {UpdateType} from '../utils/const';
 
 export default class EventsModel extends Observable {
@@ -13,17 +9,12 @@ export default class EventsModel extends Observable {
   constructor(eventsApiService) {
     super();
     this.#eventsApiService = eventsApiService;
-
-    /*    createOffersList();
-    this.#offers = getOffersList();
-    this.#events = Array.from({length: 20}, createEvent);*/
   }
 
   init = async () => {
     try {
       const events = await this.#eventsApiService.events;
       this.#offers = await this.#eventsApiService.offers;
-      console.log(events);
       this.#events = events.map((event) => this.#adaptToClient(event, this.#offers));
     }
     catch(err) {
@@ -46,12 +37,9 @@ export default class EventsModel extends Observable {
     if (index === -1) {
       throw new Error('Can\'t update unexisting task');
     }
-
     try {
       const response = await this.#eventsApiService.updateEvent(update);
-      console.log(response);
       const updatedEvent = this.#adaptToClient(response, this.#offers);
-      console.log(`updated event : ${updatedEvent}`);
       this.#events = [
         ...this.#events.slice(0, index),
         updatedEvent,
@@ -60,7 +48,6 @@ export default class EventsModel extends Observable {
       this._notify(updateType, updatedEvent);
     }
     catch (err) {
-      console.log(err);
       throw new Error('Can\'t update task');
     }
   };

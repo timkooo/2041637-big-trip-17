@@ -1,7 +1,7 @@
 import TripInfoView from '../view/trip-info-view';
 import {remove, render, RenderPosition, replace} from '../framework/render';
 import {getTripInfo} from '../utils/common';
-import {UpdateType} from "../utils/const";
+import {UpdateType} from '../utils/const';
 
 export default class TripInfoPresenter {
   #tripInfoContainer = null;

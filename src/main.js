@@ -5,7 +5,7 @@ import FilterPresenter from './presenter/filter-presenter';
 import TripInfoPresenter from './presenter/trip-info-presenter';
 import EventsApiService from './events-api-service';
 
-const AUTHORIZATION = 'Basic mfgk59ofm3orfk36r8dm';
+const AUTHORIZATION = 'Basic mfgk59ofm3orfk36r8d';
 const END_POINT = 'https://17.ecmascript.pages.academy/big-trip';
 
 const headerElement = document.querySelector('.trip-main');

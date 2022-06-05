@@ -29,7 +29,11 @@ export default class EventsApiService extends ApiService {
 
   #adaptServerOffers = (offers) => {
     const adaptOffers = [];
-    offers.forEach((offer) => adaptOffers.push(offer.id));
+    offers.forEach((offer) => {
+      if (offer.isSelected) {
+        adaptOffers.push(offer.id);
+      }
+    });
     return adaptOffers;
   };
 
@@ -47,7 +51,6 @@ export default class EventsApiService extends ApiService {
     delete adaptedEvent.fromDate;
     delete adaptedEvent.toDate;
     delete adaptedEvent.isFavorite;
-    console.log(adaptedEvent);
     return adaptedEvent;
   };
 }
