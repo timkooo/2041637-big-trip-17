@@ -97,19 +97,23 @@ export default class EventPresenter {
   #updateEventFavoriteHandler = (event) => {
     this.#eventsChangeFunc(
       UserAction.UPDATE_EVENT,
-      UpdateType.MINOR,
+      UpdateType.PATCH,
       {...event, isFavorite : !event.isFavorite});
   };
 
-  #updateEventHandler = (updateType, event) => {
-    // const isMinorUpdate = (this.#event.fromDate !== event.fromDate) ||
-    //   (this.#event.toDate !== event.toDate) || (this.#event.totalPrice !== event.fromDate.totalPrice) ||
-    //   (this.#event.offers.filter((offer) => offer.isSelected === true).length !== event.offers.filter((offer) => offer.isSelected === true).length);
+  #areOffersChanged = (event) => this.#event.offers.some((offer, index) => offer.isSelected !== event.offers[index].isSelected);
+
+  #updateEventHandler = (event) => {
+    const isMinorUpdate = (this.#event.fromDate !== event.fromDate) || this.#areOffersChanged(event) ||
+      (this.#event.toDate !== event.toDate) || (this.#event.totalPrice !== event.totalPrice);
     this.#eventsChangeFunc(
       UserAction.UPDATE_EVENT,
-      // isMinorUpdate? UpdateType.MINOR : UpdateType.PATCH,
-      updateType,
+      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
       event);
+    // this.#eventsChangeFunc(
+    //   UserAction.UPDATE_EVENT,
+    //   updateType,
+    //   event);
     this.#closeEditFormHandler();
   };
 

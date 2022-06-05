@@ -41,5 +41,4 @@ export default class TripInfoPresenter {
     }
     this.init();
   };
-
 }

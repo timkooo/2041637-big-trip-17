@@ -12,6 +12,7 @@ const EditMode = {
 const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
+  INIT: 'INIT',
 };
 
 export {UserAction, UpdateType, EditMode};

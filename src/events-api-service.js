@@ -11,14 +11,40 @@ export default class EventsApiService extends ApiService {
       .then(ApiService.parseResponse);
   }
 
+  get offers() {
+    return this._load({url: 'offers'})
+      .then(ApiService.parseResponse);
+  }
+
   updateEvent = async (event) => {
     const response = await this._load({
       url: `points/${event.id}`,
       method: Method.PUT,
-      body: JSON.stringify(event),
+      body: JSON.stringify(this.#adaptToServer(event)),
       headers: new Headers({'Content-Type': 'application/json'}),
     });
 
     return await ApiService.parseResponse(response);
+  };
+
+  #adaptServerOffers = (offers) => offers
+    .filter((offer) => offer.isSelected)
+    .map((offer) => offer.id);
+
+  #adaptToServer = (event) => {
+    const adaptedEvent = {
+      ...event,
+      'base_price' : event.totalPrice,
+      'date_from' : event.fromDate,
+      'date_to' : event.toDate,
+      'is_favorite' : event.isFavorite,
+      offers: this.#adaptServerOffers(event.offers),
+    };
+
+    delete adaptedEvent.totalPrice;
+    delete adaptedEvent.fromDate;
+    delete adaptedEvent.toDate;
+    delete adaptedEvent.isFavorite;
+    return adaptedEvent;
   };
 }
