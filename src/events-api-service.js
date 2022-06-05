@@ -27,15 +27,9 @@ export default class EventsApiService extends ApiService {
     return await ApiService.parseResponse(response);
   };
 
-  #adaptServerOffers = (offers) => {
-    const adaptOffers = [];
-    offers.forEach((offer) => {
-      if (offer.isSelected) {
-        adaptOffers.push(offer.id);
-      }
-    });
-    return adaptOffers;
-  };
+  #adaptServerOffers = (offers) => offers
+    .filter((offer) => offer.isSelected)
+    .map((offer) => offer.id);
 
   #adaptToServer = (event) => {
     const adaptedEvent = {

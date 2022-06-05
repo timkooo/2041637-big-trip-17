@@ -16,8 +16,8 @@ const addEventButton = headerElement.querySelector('.trip-main__event-add-btn');
 const filterModel = new FilterModel();
 const eventsModel = new EventsModel(new EventsApiService(END_POINT, AUTHORIZATION));
 
-const tripInfoPresenter = new TripInfoPresenter(headerElement, eventsModel);
-const filterPresenter = new FilterPresenter(headerFiltersElement, eventsModel, filterModel);
+new TripInfoPresenter(headerElement, eventsModel);
+new FilterPresenter(headerFiltersElement, eventsModel, filterModel);
 const tripPresenter = new TripPresenter(mainElement, eventsModel, filterModel);
 
 const closeNewEventFormHandler = () => {
@@ -32,8 +32,6 @@ const openNewEventFormHandler = (evt) => {
 
 tripPresenter.init();
 eventsModel.init().finally(() => {
-  tripInfoPresenter.init();
-  filterPresenter.init();
   addEventButton.addEventListener('click', openNewEventFormHandler);
 });
 

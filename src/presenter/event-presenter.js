@@ -101,18 +101,10 @@ export default class EventPresenter {
       {...event, isFavorite : !event.isFavorite});
   };
 
-  isOffersChange = (event) => {
-    let isChanged = false;
-    this.#event.offers.forEach((offer, index) => {
-      if (offer.isSelected !== event.offers[index].isSelected) {
-        isChanged = true;
-      }
-    });
-    return isChanged;
-  };
+  #areOffersChanged = (event) => this.#event.offers.some((offer, index) => offer.isSelected !== event.offers[index].isSelected);
 
   #updateEventHandler = (event) => {
-    const isMinorUpdate = (this.#event.fromDate !== event.fromDate) || this.isOffersChange(event) ||
+    const isMinorUpdate = (this.#event.fromDate !== event.fromDate) || this.#areOffersChanged(event) ||
       (this.#event.toDate !== event.toDate) || (this.#event.totalPrice !== event.totalPrice);
     this.#eventsChangeFunc(
       UserAction.UPDATE_EVENT,
