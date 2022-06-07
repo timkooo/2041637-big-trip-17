@@ -3,6 +3,8 @@ import ApiService from './framework/api-service.js';
 const Method = {
   GET: 'GET',
   PUT: 'PUT',
+  POST: 'POST',
+  DELETE: 'DELETE',
 };
 
 export default class EventsApiService extends ApiService {
@@ -16,6 +18,11 @@ export default class EventsApiService extends ApiService {
       .then(ApiService.parseResponse);
   }
 
+  get destinations() {
+    return this._load({url: 'destinations'})
+      .then(ApiService.parseResponse);
+  }
+
   updateEvent = async (event) => {
     const response = await this._load({
       url: `points/${event.id}`,
@@ -26,6 +33,22 @@ export default class EventsApiService extends ApiService {
 
     return await ApiService.parseResponse(response);
   };
+
+  addEvent = async (event) => {
+    const response = await this._load({
+      url: 'points',
+      method: Method.POST,
+      body: JSON.stringify(this.#adaptToServer(event)),
+      headers: new Headers({'Content-Type': 'application/json'}),
+    });
+
+    return await ApiService.parseResponse(response);
+  };
+
+  deleteEvent = async (event) => await this._load({
+    url: `points/${event.id}`,
+    method: Method.DELETE,
+  });
 
   #adaptServerOffers = (offers) => offers
     .filter((offer) => offer.isSelected)

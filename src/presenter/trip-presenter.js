@@ -8,6 +8,12 @@ import {filter, FilterTypes} from '../utils/filter';
 import {sorting, SortingTypes} from '../utils/sorting';
 import NewEventPresenter from './new-event-presenter';
 import LoadingView from '../view/loading-view';
+import UiBlocker from '../framework/ui-blocker/ui-blocker';
+
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
 
 export default class TripPresenter {
   #tripContainer = null;
@@ -22,6 +28,7 @@ export default class TripPresenter {
   #newEventPresenter = null;
   #isLoading = true;
   #loadingComponent = new LoadingView();
+  #uiBlocker = new UiBlocker(TimeLimit.LOWER_LIMIT, TimeLimit.UPPER_LIMIT);
 
 
   constructor(tripContainer, eventsModel, filterModel) {
@@ -30,7 +37,7 @@ export default class TripPresenter {
     render(this.#eventsListComponent, this.#tripContainer);
     this.#eventsModel = eventsModel;
     this.#filterModel = filterModel;
-    this.#newEventPresenter = new NewEventPresenter(this.#eventsListComponent, this.#eventsChangeHandler, this.#getOffersByType);
+    this.#newEventPresenter = new NewEventPresenter(this.#eventsListComponent, this.#eventsChangeHandler, this.#getOffersByType, this.#eventsModel);
     this.#eventsModel.addObserver(this.#modelEventHadler);
     this.#filterModel.addObserver(this.#resetSortingHandler);
   }
@@ -100,17 +107,38 @@ export default class TripPresenter {
     render(this.#loadingComponent, this.#tripContainer, RenderPosition.AFTERBEGIN);
   };
 
-  #eventsChangeHandler = (actionType, updateType, update) => {
+  #eventsChangeHandler = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
     switch (actionType) {
       case UserAction.UPDATE_EVENT:
-        this.#eventsModel.update(updateType, update);
+        this.#eventPresentersList.get(update.id).setSaving();
+        try {
+          await this.#eventsModel.update(updateType, update);
+        }
+        catch(err) {
+          this.#eventPresentersList.get(update.id).setAborting();
+        }
         break;
       case UserAction.ADD_EVENT:
-        this.#eventsModel.add(updateType, update);
+        this.#newEventPresenter.setSaving();
+        try {
+          await this.#eventsModel.add(updateType, update);
+        }
+        catch(err) {
+          this.#newEventPresenter.setAborting();
+        }
         break;
       case UserAction.DELETE_EVENT:
-        this.#eventsModel.delete(updateType, update);
+        this.#eventPresentersList.get(update.id).setDeleting();
+        try {
+          await this.#eventsModel.delete(updateType, update);
+        }
+        catch(err) {
+          this.#eventPresentersList.get(update.id).setAborting();
+        }
+        break;
     }
+    this.#uiBlocker.unblock();
   };
 
   #modelEventHadler = (updateType, updatedEvent) => {
@@ -154,7 +182,7 @@ export default class TripPresenter {
   };
 
   #renderEvent = (event) => {
-    const eventPresenter = new EventPresenter(this.#eventsListComponent, this.#viewModeChangeHandler, this.#eventsChangeHandler, this.#getOffersByType);
+    const eventPresenter = new EventPresenter(this.#eventsListComponent, this.#viewModeChangeHandler, this.#eventsChangeHandler, this.#getOffersByType, this.#eventsModel);
     this.#eventPresentersList.set(event.id, eventPresenter);
     eventPresenter.init(event);
   };
