@@ -33,13 +33,14 @@ export default class NewEventPresenter {
 
     if (prevNewEventComponent === null) {
       render(this.#newEventComponent, this.#newEventContainer.element, RenderPosition.AFTERBEGIN);
+      document.addEventListener('keydown', this.#onEscKeyDown2);
       return;
     }
 
     replace(this.#newEventComponent, prevNewEventComponent);
     remove(prevNewEventComponent);
 
-    document.addEventListener('keydown', this.#onEscKeyDown);
+    document.addEventListener('keydown', this.#onEscKeyDown2);
   };
 
   #createDefaultEvent = () => ({
@@ -81,13 +82,12 @@ export default class NewEventPresenter {
     if (this.#newEventComponent === null) {
       return;
     }
-
     this.#destroyCallback();
 
     remove(this.#newEventComponent);
     this.#newEventComponent = null;
 
-    document.removeEventListener('keydown', this.#onEscKeyDown);
+    document.removeEventListener('keydown', this.#onEscKeyDown2);
   }
 
   #addNewEventHandler = (event) => {
@@ -102,7 +102,7 @@ export default class NewEventPresenter {
     this.destroy();
   };
 
-  #onEscKeyDown = (evt) => {
+  #onEscKeyDown2 = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
       this.destroy();

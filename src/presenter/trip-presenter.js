@@ -54,7 +54,7 @@ export default class TripPresenter {
 
   addNewEvent = (callback) => {
     this.#currentSorting = SortingTypes.DAY;
-    this.#filterModel.setFilter(UpdateType.MAJOR, FilterTypes.EVERYTHING);
+    this.#filterModel.setFilter(UpdateType.MINOR, FilterTypes.EVERYTHING);
     this.#newEventPresenter.init(callback);
   };
 

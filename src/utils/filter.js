@@ -8,7 +8,7 @@ const FilterTypes = {
 
 const isEventDateFuture = (event) => dayjs().isBefore(event.fromDate, 'D');
 
-const isEventDatePast = (event) => dayjs().isAfter(event.fromDate, 'D');
+const isEventDatePast = (event) => dayjs().isAfter(event.toDate, 'D');
 
 const filter = {
   [FilterTypes.EVERYTHING] : (event) => (event),
