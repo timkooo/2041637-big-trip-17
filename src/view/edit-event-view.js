@@ -16,36 +16,17 @@ const EventType = {
   FLIGHT : 'flight',
 };
 
-// const editModeTemplate = {
-//   [EditMode.EDIT]: ` <button class="event__reset-btn" type="reset">Delete</button>
-//                   <button class="event__rollup-btn" type="button">
-//                     <span class="visually-hidden">Open event</span>
-//                   </button>`,
-//   [EditMode.NEW]: '<button class="event__reset-btn" type="reset">Cancel</button>'
-// };
-
 const createEditModeTemplate = (editMode, isDeleting) => {
-  switch (editMode) {
-    case EditMode.EDIT:
-      return `<button class="event__reset-btn" type="reset">${isDeleting ? 'Deleting...' : 'Delete'}</button>
+  if (editMode === EditMode.EDIT) {
+    return `<button class="event__reset-btn" type="reset">${isDeleting ? 'Deleting...' : 'Delete'}</button>
                   <button class="event__rollup-btn" type="button">
                     <span class="visually-hidden">Open event</span>
                   </button>`;
-    case EditMode.NEW:
-      return '<button class="event__reset-btn" type="reset">Cancel</button>';
+  }
+  if (editMode === EditMode.NEW) {
+    return '<button class="event__reset-btn" type="reset">Cancel</button>';
   }
 };
-
-// const BLANK_EVENT = {
-//   totalPrice: '',
-//   fromDate: new Date(),
-//   toDate: new Date(),
-//   destination: '',
-//   id: null,
-//   isFavorite: null,
-//   offers: [],
-//   type: 'bus',
-// };
 
 const createPicturesTemplate = (pictures) => {
   const picturesList = pictures.reduce((accumulator, picture) => `${accumulator  }<img class="event__photo" src="${picture.src}" alt="Event photo">`, '');
@@ -70,13 +51,7 @@ const createDestinationTemplate = (destination) => {
 
 const ifOfferSelected = (offer) => offer.isSelected ? 'checked' : '';
 
-const createDestinationList = (destinations) => {
-  let destinationList = '';
-  destinations.forEach((destination) => {
-    destinationList += `<option value="${destination}"></option>`;
-  });
-  return destinationList;
-};
+const createDestinationList = (destinations) => destinations.reduce((accumulator, destination) => `${accumulator}<option value="${destination}"></option>`, '');
 
 const createOffersTemplate = (offers, isDisabled) => {
   let offerTemplate = '';
@@ -109,7 +84,7 @@ const createEditEventTemplate = (data, editMode, destinations) => {
   const destinationList = createDestinationList(destinations);
   const editModeTemplate = createEditModeTemplate(editMode, isDeleting);
 
-  if (data.destination.description || data.destination.pictures) {
+  if (destinations.includes(destination.name)) /*&& data.destination.description || data.destination.pictures)*/ {
     destinationTemplate = createDestinationTemplate(destination);
   }
 
@@ -185,10 +160,9 @@ const createEditEventTemplate = (data, editMode, destinations) => {
         </label>
         <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1" ${isDisabled ? 'disabled' : ''}>
         <datalist id="destination-list-1">
-<!--          <option value="Amsterdam"></option>
-          <option value="Geneva"></option>
-          <option value="Chamonix"></option>-->
+
           ${destinationList}
+
         </datalist>
       </div>
 
@@ -228,7 +202,6 @@ export default class EditEventView extends AbstractStatefulView{
   #fromDatepicker = null;
   #toDatepicker = null;
   #currentEditMode = null;
-  // #updateType = null;
   #destinations = null;
 
   constructor(event, editMode, destinations) {
@@ -302,18 +275,12 @@ export default class EditEventView extends AbstractStatefulView{
     this.updateElement({
       fromDate: userDate,
     });
-    // if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
-    //   this.#updateType = UpdateType.MINOR;
-    // }
   };
 
   #editToDateHandler = ([userDate]) => {
     this.updateElement({
       toDate: userDate,
     });
-    // if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
-    //   this.#updateType = UpdateType.MINOR;
-    // }
   };
 
   setCloseEditFormHandler = (cb) => {
@@ -360,9 +327,26 @@ export default class EditEventView extends AbstractStatefulView{
 
   #changeEventDestinationHandler = (evt) => {
     evt.preventDefault();
-    this.updateElement({
-      destination: this._callback.chageEventDestinationClick(evt.target.value),
+    this._setState({
+      destination: {
+        name: evt.target.value,
+      }
     });
+    if (this.#destinations.includes(evt.target.value)) {
+      this.updateElement({
+        destination: this._callback.chageEventDestinationClick(evt.target.value),
+      });
+    } else {
+      if (this._state.destination.description !== '') {
+        this.updateElement({
+          destination: {
+            name: evt.target.value,
+            description: '',
+            pictures: [],
+          }
+        });
+      }
+    }
   };
 
   #closeEditFormHandler = (evt) => {
@@ -379,25 +363,12 @@ export default class EditEventView extends AbstractStatefulView{
   #updateEventHadler = (evt) => {
     evt.preventDefault();
     this._callback.updateEventClick(this.#convertStatementToEvent());
-    // this.#updateType = null;
   };
 
   #editPriceHandler = (evt) => {
     evt.preventDefault();
     this._setState({totalPrice : +evt.target.value});
-    // if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
-    //   this.#updateType = UpdateType.MINOR;
-    // }
   };
-
-  // #editDestinationHandler = (evt) => {
-  //   evt.preventDefault();
-  //   const dest = this._state.destination;
-  //   this._setState({destination : {...dest, name : evt.target.value}});
-  //   // if (this.#updateType === null) {
-  //   //   this.#updateType = UpdateType.PATCH;
-  //   // }
-  // };
 
   #editOffersHandler = (evt) => {
     evt.preventDefault();
@@ -410,9 +381,6 @@ export default class EditEventView extends AbstractStatefulView{
       : offer);
 
     this._setState({ offers });
-    // if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
-    //   this.#updateType = UpdateType.MINOR;
-    // }
   };
 
   #setInnerHandlers = () => {
@@ -424,7 +392,6 @@ export default class EditEventView extends AbstractStatefulView{
     }
     this.element.querySelector('.event__input--price').addEventListener('input', this.#editPriceHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#changeEventDestinationHandler);
-    //this.element.querySelector('.event__input--destination').addEventListener('input', this.#editDestinationHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#changeEventTypeHandler);
     if (this._state.offers.length !== 0) {
       this.element.querySelector('.event__available-offers').addEventListener('change', this.#editOffersHandler);

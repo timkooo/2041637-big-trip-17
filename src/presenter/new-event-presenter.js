@@ -2,7 +2,6 @@ import EditEventView from '../view/edit-event-view';
 import {remove, render, replace} from '../framework/render';
 import {UpdateType, UserAction} from '../utils/const';
 import {RenderPosition} from '../framework/render';
-//import {nanoid} from 'nanoid';
 import {EditMode} from '../utils/const';
 
 export default class NewEventPresenter {
@@ -25,7 +24,7 @@ export default class NewEventPresenter {
 
     const prevNewEventComponent = this.#newEventComponent;
 
-    this.#newEventComponent = new EditEventView(/*{...defualtEvent, offers: this.#changeEventTypeFunc(defualtEvent.type)}*/ this.#createDefaultEvent(), EditMode.NEW, this.destinations);
+    this.#newEventComponent = new EditEventView(this.#createDefaultEvent(), EditMode.NEW, this.destinations);
 
     this.#newEventComponent.setUpdateEventHandler(this.#addNewEventHandler);
     this.#newEventComponent.setCloseEditFormHandler(this.#closeEditFormHandler);
@@ -48,7 +47,6 @@ export default class NewEventPresenter {
     fromDate: new Date(),
     toDate: new Date(),
     destination: this.#eventsModel.destinations[1],
-    //id: null,
     isFavorite: false,
     offers: this.#changeEventTypeFunc('bus'),
     type: 'bus',
@@ -98,7 +96,6 @@ export default class NewEventPresenter {
       UpdateType.MINOR,
       event,
     );
-    //this.destroy();
   };
 
   #closeEditFormHandler = () => {

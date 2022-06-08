@@ -58,7 +58,6 @@ export default class EventPresenter {
     }
 
     if (this.#eventMode === EventMode.EDITING) {
-      //replace(this.#editEventComponent, prevEditEventComponent);
       replace(this.#eventComponent, prevEditEventComponent);
       this.#eventMode = EventMode.DEFAULT;
     }
@@ -156,7 +155,6 @@ export default class EventPresenter {
       UserAction.UPDATE_EVENT,
       isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
       event);
-    //this.#closeEditFormHandler();
   };
 
   #deleteEventHandler = (event) => {
