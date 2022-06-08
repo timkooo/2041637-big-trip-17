@@ -1,20 +1,20 @@
 import AbstractView from '../framework/view/abstract-view';
 import {FilterTypes} from '../utils/filter';
 
-const createFiltersTemplate = (currenFilter) => (
+const createFiltersTemplate = (currenFilter, filtersActivity) => (
   `<form class="trip-filters" action="#" method="get">
     <div class="trip-filters__filter">
-      <input id="filter-everything" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="everything" ${currenFilter === FilterTypes.EVERYTHING ? 'checked' : ''}>
+      <input id="filter-everything" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="everything" ${currenFilter === FilterTypes.EVERYTHING ? 'checked' : ''} ${filtersActivity['everything'] ? '' : 'disabled'}>
       <label class="trip-filters__filter-label" for="filter-everything">Everything</label>
     </div>
 
     <div class="trip-filters__filter">
-      <input id="filter-future" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="future" ${currenFilter === FilterTypes.FUTURE ? 'checked' : ''}>
+      <input id="filter-future" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="future" ${currenFilter === FilterTypes.FUTURE ? 'checked' : ''} ${filtersActivity['future'] ? '' : 'disabled'}>
       <label class="trip-filters__filter-label" for="filter-future">Future</label>
     </div>
 
     <div class="trip-filters__filter">
-      <input id="filter-past" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="past" ${currenFilter === FilterTypes.PAST ? 'checked' : ''}>
+      <input id="filter-past" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="past" ${currenFilter === FilterTypes.PAST ? 'checked' : ''} ${filtersActivity['past'] ? '' : 'disabled'}>
       <label class="trip-filters__filter-label" for="filter-past">Past</label>
     </div>
 
@@ -25,14 +25,16 @@ const createFiltersTemplate = (currenFilter) => (
 export default class FiltersView extends AbstractView{
 
   #currentFilter = null;
+  #filtersActivity = null;
 
-  constructor(currentFilter) {
+  constructor(currentFilter, filtersActivity) {
     super();
     this.#currentFilter = currentFilter;
+    this.#filtersActivity = filtersActivity;
   }
 
   get template() {
-    return createFiltersTemplate(this.#currentFilter);
+    return createFiltersTemplate(this.#currentFilter, this.#filtersActivity);
   }
 
   setChangeFilterEventsHandler = (cb) => {
