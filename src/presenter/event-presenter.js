@@ -15,16 +15,18 @@ export default class EventPresenter {
   #editEventComponent = null;
   #eventsListComponent = null;
   #eventMode = EventMode.DEFAULT;
+  #eventsModel = null;
 
   #viewModeChangeFunc = null;
   #eventsChangeFunc = null;
   #changeEventTypeFunc = null;
 
-  constructor(eventListComponent, modeChangeFunc, eventsChangeFunc, changeOfferTypeFunc) {
+  constructor(eventListComponent, modeChangeFunc, eventsChangeFunc, changeOfferTypeFunc, eventsModel) {
     this.#eventsListComponent = eventListComponent;
     this.#viewModeChangeFunc = modeChangeFunc;
     this.#eventsChangeFunc = eventsChangeFunc;
     this.#changeEventTypeFunc = changeOfferTypeFunc;
+    this.#eventsModel = eventsModel;
   }
 
   init(event) {
@@ -34,13 +36,14 @@ export default class EventPresenter {
     const prevEditEventComponent = this.#editEventComponent;
 
     this.#eventComponent = new EventView(this.#event);
-    this.#editEventComponent = new EditEventView(this.#event, EditMode.EDIT);
+    this.#editEventComponent = new EditEventView(this.#event, EditMode.EDIT, this.destinations);
 
     this.#eventComponent.setUpdateEventFavoriteHandler(this.#updateEventFavoriteHandler);
     this.#editEventComponent.setCloseEditFormHandler(this.#closeEditFormHandler);
     this.#editEventComponent.setUpdateEventHandler(this.#updateEventHandler);
     this.#editEventComponent.setDeleteEventHandler(this.#deleteEventHandler);
     this.#editEventComponent.setChangeEventTypeHandler(this.#changeEventTypeFunc);
+    this.#editEventComponent.setChangeEventDestinationHandler(this.#changeEventDestinationHandler);
 
     this.#eventComponent.element.dataset.eventId = this.#event.id;
     this.#editEventComponent.element.dataset.eventId = this.#event.id;
@@ -55,7 +58,8 @@ export default class EventPresenter {
     }
 
     if (this.#eventMode === EventMode.EDITING) {
-      replace(this.#editEventComponent, prevEditEventComponent);
+      replace(this.#eventComponent, prevEditEventComponent);
+      this.#eventMode = EventMode.DEFAULT;
     }
 
     remove(prevEventComponent);
@@ -67,11 +71,52 @@ export default class EventPresenter {
     remove(this.#editEventComponent);
   };
 
+  #changeEventDestinationHandler = (eventName) => this.#eventsModel.destinations.find((destination) => destination.name === eventName);
+
+  get destinations() {
+    return this.#eventsModel.destinations.map((destination) => destination.name);
+  }
+
   #onEscKeyDown = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       this.#editEventComponent.reset(this.#event);
       this.#closeEditFormHandler();
     }
+  };
+
+  setSaving = () => {
+    if (this.#eventMode === EventMode.EDITING) {
+      this.#editEventComponent.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  };
+
+  setDeleting = () => {
+    if (this.#eventMode === EventMode.EDITING) {
+      this.#editEventComponent.updateElement({
+        isDisabled: true,
+        isDeleting: true,
+      });
+    }
+  };
+
+  setAborting = () => {
+    if (this.#eventMode === EventMode.DEFAULT) {
+      this.#eventComponent.shake();
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#editEventComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#editEventComponent.shake(resetFormState);
   };
 
   showEditForm = () => {
@@ -110,11 +155,6 @@ export default class EventPresenter {
       UserAction.UPDATE_EVENT,
       isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
       event);
-    // this.#eventsChangeFunc(
-    //   UserAction.UPDATE_EVENT,
-    //   updateType,
-    //   event);
-    this.#closeEditFormHandler();
   };
 
   #deleteEventHandler = (event) => {

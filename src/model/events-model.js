@@ -5,6 +5,7 @@ export default class EventsModel extends Observable {
   #eventsApiService = null;
   #events = null;
   #offers = null;
+  #destinations = null;
 
   constructor(eventsApiService) {
     super();
@@ -15,6 +16,7 @@ export default class EventsModel extends Observable {
     try {
       const events = await this.#eventsApiService.events;
       this.#offers = await this.#eventsApiService.offers;
+      this.#destinations = await this.#eventsApiService.destinations;
       this.#events = events.map((event) => this.#adaptToClient(event, this.#offers));
     }
     catch(err) {
@@ -31,11 +33,15 @@ export default class EventsModel extends Observable {
     return this.#events;
   }
 
+  get destinations() {
+    return this.#destinations;
+  }
+
   update = async (updateType, update) => {
     const index = this.#events.findIndex((event) => event.id === update.id);
 
     if (index === -1) {
-      throw new Error('Can\'t update unexisting task');
+      throw new Error('Can\'t update unexisting event');
     }
     try {
       const response = await this.#eventsApiService.updateEvent(update);
@@ -48,32 +54,40 @@ export default class EventsModel extends Observable {
       this._notify(updateType, updatedEvent);
     }
     catch (err) {
-      throw new Error('Can\'t update task');
+      throw new Error('Can\'t update event');
     }
   };
 
-  add = (updateType, update) => {
-    this.#events = [
-      update,
-      ...this.#events,
-    ];
+  add = async (updateType, update) => {
+    try {
+      const response = await this.#eventsApiService.addEvent(update);
+      const newEvent = this.#adaptToClient(response, this.#offers);
+      this.#events = [newEvent, ...this.#events];
+      this._notify(updateType, newEvent);
+    } catch(err) {
+      throw new Error('Can\'t add event');
+    }
 
     this._notify(updateType, update);
   };
 
-  delete = (updateType, update) => {
+  delete = async (updateType, update) => {
     const index = this.#events.findIndex((event) => event.id === update.id);
 
     if (index === -1) {
-      throw new Error('Can\'t delete unexisting task');
+      throw new Error('Can\'t delete unexisting event');
     }
-
-    this.#events = [
-      ...this.#events.slice(0, index),
-      ...this.#events.slice(index + 1),
-    ];
-
-    this._notify(updateType);
+    try {
+      await this.#eventsApiService.deleteEvent(update);
+      this.#events = [
+        ...this.#events.slice(0, index),
+        ...this.#events.slice(index + 1),
+      ];
+      this._notify(updateType);
+    }
+    catch(err) {
+      throw new Error('Can\'t delete event');
+    }
   };
 
   #adaptClientOffers = (event, offers) => {

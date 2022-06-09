@@ -2,21 +2,7 @@ import EditEventView from '../view/edit-event-view';
 import {remove, render, replace} from '../framework/render';
 import {UpdateType, UserAction} from '../utils/const';
 import {RenderPosition} from '../framework/render';
-import {nanoid} from 'nanoid';
 import {EditMode} from '../utils/const';
-
-const defualtEvent = {
-  totalPrice: '',
-  fromDate: new Date(),
-  toDate: new Date(),
-  destination: {
-    name: 'Moscow',
-  },
-  id: '',
-  isFavorite: null,
-  offers: [],
-  type: 'bus',
-};
 
 export default class NewEventPresenter {
   #newEventContainer = null;
@@ -24,11 +10,13 @@ export default class NewEventPresenter {
   #changeDataFunc = null;
   #destroyCallback = null;
   #changeEventTypeFunc = null;
+  #eventsModel = null;
 
-  constructor(newEventContainer, changeDataFunc, changeEventTypeFunc) {
+  constructor(newEventContainer, changeDataFunc, changeEventTypeFunc, eventsModel) {
     this.#newEventContainer = newEventContainer;
     this.#changeDataFunc = changeDataFunc;
     this.#changeEventTypeFunc = changeEventTypeFunc;
+    this.#eventsModel = eventsModel;
   }
 
   init = (callback) => {
@@ -36,14 +24,16 @@ export default class NewEventPresenter {
 
     const prevNewEventComponent = this.#newEventComponent;
 
-    this.#newEventComponent = new EditEventView({...defualtEvent, offers: this.#changeEventTypeFunc(defualtEvent.type)}, EditMode.NEW);
+    this.#newEventComponent = new EditEventView(this.#createDefaultEvent(), EditMode.NEW, this.destinations);
 
     this.#newEventComponent.setUpdateEventHandler(this.#addNewEventHandler);
     this.#newEventComponent.setCloseEditFormHandler(this.#closeEditFormHandler);
     this.#newEventComponent.setChangeEventTypeHandler(this.#changeEventTypeFunc);
+    this.#newEventComponent.setChangeEventDestinationHandler(this.#changeEventDestinationHandler);
 
     if (prevNewEventComponent === null) {
       render(this.#newEventComponent, this.#newEventContainer.element, RenderPosition.AFTERBEGIN);
+      document.addEventListener('keydown', this.#onEscKeyDown);
       return;
     }
 
@@ -53,11 +43,45 @@ export default class NewEventPresenter {
     document.addEventListener('keydown', this.#onEscKeyDown);
   };
 
+  #createDefaultEvent = () => ({
+    totalPrice: '',
+    fromDate: new Date(),
+    toDate: new Date(),
+    destination: this.#eventsModel.destinations[1],
+    isFavorite: false,
+    offers: this.#changeEventTypeFunc('bus'),
+    type: 'bus',
+  });
+
+  setSaving = () => {
+    this.#newEventComponent.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  };
+
+  setAborting = () => {
+    const resetFormState = () => {
+      this.#newEventComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#newEventComponent.shake(resetFormState);
+  };
+
+  #changeEventDestinationHandler = (eventName) => this.#eventsModel.destinations.find((destination) => destination.name === eventName);
+
+  get destinations() {
+    return this.#eventsModel.destinations.map((destination) => destination.name);
+  }
+
   destroy() {
     if (this.#newEventComponent === null) {
       return;
     }
-
     this.#destroyCallback();
 
     remove(this.#newEventComponent);
@@ -70,9 +94,8 @@ export default class NewEventPresenter {
     this.#changeDataFunc(
       UserAction.ADD_EVENT,
       UpdateType.MINOR,
-      {...event, id: nanoid()},
+      event,
     );
-    this.destroy();
   };
 
   #closeEditFormHandler = () => {

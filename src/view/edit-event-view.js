@@ -16,23 +16,16 @@ const EventType = {
   FLIGHT : 'flight',
 };
 
-const editModeTemplate = {
-  [EditMode.EDIT]: ` <button class="event__reset-btn" type="reset">Delete</button>
+const createEditModeTemplate = (editMode, isDeleting) => {
+  if (editMode === EditMode.EDIT) {
+    return `<button class="event__reset-btn" type="reset">${isDeleting ? 'Deleting...' : 'Delete'}</button>
                   <button class="event__rollup-btn" type="button">
                     <span class="visually-hidden">Open event</span>
-                  </button>`,
-  [EditMode.NEW]: '<button class="event__reset-btn" type="reset">Cancel</button>'
-};
-
-const BLANK_EVENT = {
-  totalPrice: '',
-  fromDate: new Date(),
-  toDate: new Date(),
-  destination: '',
-  id: '',
-  isFavorite: null,
-  offers: [],
-  type: 'bus',
+                  </button>`;
+  }
+  if (editMode === EditMode.NEW) {
+    return '<button class="event__reset-btn" type="reset">Cancel</button>';
+  }
 };
 
 const createPicturesTemplate = (pictures) => {
@@ -58,11 +51,13 @@ const createDestinationTemplate = (destination) => {
 
 const ifOfferSelected = (offer) => offer.isSelected ? 'checked' : '';
 
-const createOffersTemplate = (offers) => {
+const createDestinationList = (destinations) => destinations.reduce((accumulator, destination) => `${accumulator}<option value="${destination}"></option>`, '');
+
+const createOffersTemplate = (offers, isDisabled) => {
   let offerTemplate = '';
   offers.forEach((offer) => {
     offerTemplate += `<div class="event__offer-selector">
-                        <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage" ${ifOfferSelected(offer)}>
+                        <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage" ${ifOfferSelected(offer)} ${isDisabled ? 'disabled' : ''}>
                         <label class="event__offer-label" for="${offer.id}">
                           <span class="event__offer-title">${offer.title}</span>
                           &plus;&euro;&nbsp;
@@ -78,21 +73,23 @@ const createOffersTemplate = (offers) => {
           </section>`;
 };
 
-const createEditEventTemplate = (data, editMode) => {
-  const {type, fromDate, toDate, offers, destination, totalPrice} = data;
+const createEditEventTemplate = (data, editMode, destinations) => {
+  const {type, fromDate, toDate, offers, destination, totalPrice, isDisabled, isSaving, isDeleting} = data;
 
   let destinationTemplate = '';
   let offersTemplate = '';
 
   const startTime = humanizeEditTime(fromDate);
   const endTime = humanizeEditTime(toDate);
+  const destinationList = createDestinationList(destinations);
+  const editModeTemplate = createEditModeTemplate(editMode, isDeleting);
 
-  if (data.destination.description || data.destination.pictures) {
+  if (destinations.includes(destination.name) && (destination.description || destination.pictures)) {
     destinationTemplate = createDestinationTemplate(destination);
   }
 
   if (data.offers.length !== 0) {
-    offersTemplate = createOffersTemplate(offers);
+    offersTemplate = createOffersTemplate(offers, isDisabled);
   }
 
   return `<li class="trip-events__item">
@@ -103,7 +100,7 @@ const createEditEventTemplate = (data, editMode) => {
           <span class="visually-hidden">Choose event type</span>
           <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
         </label>
-        <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
+        <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox" ${isDisabled ? 'disabled' : ''}>
 
         <div class="event__type-list">
           <fieldset class="event__type-group">
@@ -161,20 +158,20 @@ const createEditEventTemplate = (data, editMode) => {
         <label class="event__label  event__type-output" for="event-destination-1">
           ${type}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
+        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1" ${isDisabled ? 'disabled' : ''}>
         <datalist id="destination-list-1">
-          <option value="Amsterdam"></option>
-          <option value="Geneva"></option>
-          <option value="Chamonix"></option>
+
+          ${destinationList}
+
         </datalist>
       </div>
 
       <div class="event__field-group  event__field-group--time">
         <label class="visually-hidden" for="event-start-time-1">From</label>
-        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${startTime}">
+        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${startTime}" ${isDisabled ? 'disabled' : ''}>
         &mdash;
         <label class="visually-hidden" for="event-end-time-1">To</label>
-        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${endTime}">
+        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${endTime}" ${isDisabled ? 'disabled' : ''}>
       </div>
 
       <div class="event__field-group  event__field-group--price">
@@ -182,12 +179,12 @@ const createEditEventTemplate = (data, editMode) => {
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${totalPrice}">
+        <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${totalPrice}" ${isDisabled ? 'disabled' : ''}>
       </div>
 
-      <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+      <button class="event__save-btn  btn  btn--blue" type="submit">${isSaving ? 'Saving...' : 'Save'}</button>
 
-      ${editModeTemplate[editMode]}
+      ${editModeTemplate}
 
     </header>
     <section class="event__details">
@@ -205,19 +202,20 @@ export default class EditEventView extends AbstractStatefulView{
   #fromDatepicker = null;
   #toDatepicker = null;
   #currentEditMode = null;
-  // #updateType = null;
+  #destinations = null;
 
-  constructor(event = BLANK_EVENT, editMode) {
+  constructor(event, editMode, destinations) {
     super();
     this._state = this.#convertEventToStatement(event);
     this.#currentEditMode = editMode;
+    this.#destinations = destinations;
 
     this.#setDatepicker();
     this.#setInnerHandlers();
   }
 
   get template() {
-    return createEditEventTemplate(this._state, this.#currentEditMode);
+    return createEditEventTemplate(this._state, this.#currentEditMode, this.#destinations);
   }
 
   removeElement = () => {
@@ -257,9 +255,19 @@ export default class EditEventView extends AbstractStatefulView{
     );
   };
 
-  #convertEventToStatement = (event) => ({...event});
+  #convertEventToStatement = (event) => ({...event,
+    isDisabled: false,
+    isSaving: false,
+    isDeleting: false,
+  });
 
-  #convertStatementToEvent = () => ({...this._state});
+  #convertStatementToEvent = () => {
+    const event = {...this._state};
+    delete event.isDisabled;
+    delete event.isSaving;
+    delete event.isDeleting;
+    return event;
+  };
 
   reset = (event) => this.updateElement(this.#convertEventToStatement(event));
 
@@ -267,18 +275,12 @@ export default class EditEventView extends AbstractStatefulView{
     this.updateElement({
       fromDate: userDate,
     });
-    // if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
-    //   this.#updateType = UpdateType.MINOR;
-    // }
   };
 
   #editToDateHandler = ([userDate]) => {
     this.updateElement({
       toDate: userDate,
     });
-    // if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
-    //   this.#updateType = UpdateType.MINOR;
-    // }
   };
 
   setCloseEditFormHandler = (cb) => {
@@ -308,12 +310,41 @@ export default class EditEventView extends AbstractStatefulView{
     this.element.querySelector('.event__type-group').addEventListener('change', this.#changeEventTypeHandler);
   };
 
+  setChangeEventDestinationHandler = (cb) => {
+    this._callback.chageEventDestinationClick = cb;
+    this.element.querySelector('.event__input--destination').addEventListener('change', this.#changeEventDestinationHandler);
+  };
+
   #changeEventTypeHandler = (evt) => {
     if (evt.target.closest('.event__type-input')) {
       evt.preventDefault();
       this.updateElement({
         type : evt.target.value,
         offers : this._callback.chageEventTypeClick(evt.target.value),
+      });
+    }
+  };
+
+  #changeEventDestinationHandler = (evt) => {
+    evt.preventDefault();
+    this._setState({
+      destination: {
+        name: evt.target.value,
+      }
+    });
+    if (this.#destinations.includes(evt.target.value)) {
+      this.updateElement({
+        destination: this._callback.chageEventDestinationClick(evt.target.value),
+      });
+      return;
+    }
+    if (this._state.destination.description !== '') {
+      this.updateElement({
+        destination: {
+          name: evt.target.value,
+          description: '',
+          pictures: [],
+        }
       });
     }
   };
@@ -332,24 +363,11 @@ export default class EditEventView extends AbstractStatefulView{
   #updateEventHadler = (evt) => {
     evt.preventDefault();
     this._callback.updateEventClick(this.#convertStatementToEvent());
-    // this.#updateType = null;
   };
 
   #editPriceHandler = (evt) => {
     evt.preventDefault();
     this._setState({totalPrice : +evt.target.value});
-    // if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
-    //   this.#updateType = UpdateType.MINOR;
-    // }
-  };
-
-  #editDestinationHandler = (evt) => {
-    evt.preventDefault();
-    const dest = this._state.destination;
-    this._setState({destination : {...dest, name : evt.target.value}});
-    // if (this.#updateType === null) {
-    //   this.#updateType = UpdateType.PATCH;
-    // }
   };
 
   #editOffersHandler = (evt) => {
@@ -363,9 +381,6 @@ export default class EditEventView extends AbstractStatefulView{
       : offer);
 
     this._setState({ offers });
-    // if (this.#updateType === null || this.#updateType === UpdateType.PATCH) {
-    //   this.#updateType = UpdateType.MINOR;
-    // }
   };
 
   #setInnerHandlers = () => {
@@ -376,7 +391,7 @@ export default class EditEventView extends AbstractStatefulView{
       this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteEventHandler);
     }
     this.element.querySelector('.event__input--price').addEventListener('input', this.#editPriceHandler);
-    this.element.querySelector('.event__input--destination').addEventListener('input', this.#editDestinationHandler);
+    this.element.querySelector('.event__input--destination').addEventListener('change', this.#changeEventDestinationHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#changeEventTypeHandler);
     if (this._state.offers.length !== 0) {
       this.element.querySelector('.event__available-offers').addEventListener('change', this.#editOffersHandler);

@@ -6,9 +6,9 @@ const FilterTypes = {
   PAST : 'past',
 };
 
-const isEventDateFuture = (event) => dayjs().isBefore(event.fromDate, 'D');
+const isEventDateFuture = (event) => dayjs().isBefore(event.fromDate, 'D') || (dayjs().isAfter(event.fromDate, 'D') && dayjs().isBefore(event.toDate, 'D'));
 
-const isEventDatePast = (event) => dayjs().isAfter(event.fromDate, 'D');
+const isEventDatePast = (event) => dayjs().isAfter(event.toDate, 'D') || (dayjs().isAfter(event.fromDate, 'D') && dayjs().isBefore(event.toDate, 'D'));
 
 const filter = {
   [FilterTypes.EVERYTHING] : (event) => (event),
