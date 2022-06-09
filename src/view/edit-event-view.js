@@ -84,7 +84,7 @@ const createEditEventTemplate = (data, editMode, destinations) => {
   const destinationList = createDestinationList(destinations);
   const editModeTemplate = createEditModeTemplate(editMode, isDeleting);
 
-  if (destinations.includes(destination.name)) /*&& data.destination.description || data.destination.pictures)*/ {
+  if (destinations.includes(destination.name) && (destination.description || destination.pictures)) {
     destinationTemplate = createDestinationTemplate(destination);
   }
 
@@ -336,16 +336,16 @@ export default class EditEventView extends AbstractStatefulView{
       this.updateElement({
         destination: this._callback.chageEventDestinationClick(evt.target.value),
       });
-    } else {
-      if (this._state.destination.description !== '') {
-        this.updateElement({
-          destination: {
-            name: evt.target.value,
-            description: '',
-            pictures: [],
-          }
-        });
-      }
+      return;
+    }
+    if (this._state.destination.description !== '') {
+      this.updateElement({
+        destination: {
+          name: evt.target.value,
+          description: '',
+          pictures: [],
+        }
+      });
     }
   };
 
