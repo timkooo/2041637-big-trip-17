@@ -5,15 +5,15 @@ import {EditMode} from '../utils/const';
 import 'flatpickr/dist/flatpickr.min.css';
 
 const EventType = {
-  TAXI : 'taxi',
-  RESTAURANT : 'restaurant',
-  BUS : 'bus',
-  TRAIN : 'train',
-  DRIVE : 'drive',
-  CHECKIN : 'check-in',
-  SIGHTSEEING : 'sightseeing',
-  SHIP : 'ship',
-  FLIGHT : 'flight',
+  TAXI: 'taxi',
+  RESTAURANT: 'restaurant',
+  BUS: 'bus',
+  TRAIN: 'train',
+  DRIVE: 'drive',
+  CHECKIN: 'check-in',
+  SIGHTSEEING: 'sightseeing',
+  SHIP: 'ship',
+  FLIGHT: 'flight',
 };
 
 const createEditModeTemplate = (editMode, isDeleting) => {
@@ -29,7 +29,7 @@ const createEditModeTemplate = (editMode, isDeleting) => {
 };
 
 const createPicturesTemplate = (pictures) => {
-  const picturesList = pictures.reduce((accumulator, picture) => `${accumulator  }<img class="event__photo" src="${picture.src}" alt="Event photo">`, '');
+  const picturesList = pictures.reduce((accumulator, picture) => `${accumulator}<img class="event__photo" src="${picture.src}" alt="Event photo">`, '');
   return `<div class="event__photos-container">
             <div class="event__photos-tape">
             ${picturesList}
@@ -54,17 +54,15 @@ const ifOfferSelected = (offer) => offer.isSelected ? 'checked' : '';
 const createDestinationList = (destinations) => destinations.reduce((accumulator, destination) => `${accumulator}<option value="${destination}"></option>`, '');
 
 const createOffersTemplate = (offers, isDisabled) => {
-  let offerTemplate = '';
-  offers.forEach((offer) => {
-    offerTemplate += `<div class="event__offer-selector">
-                        <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage" ${ifOfferSelected(offer)} ${isDisabled ? 'disabled' : ''}>
-                        <label class="event__offer-label" for="${offer.id}">
-                          <span class="event__offer-title">${offer.title}</span>
-                          &plus;&euro;&nbsp;
-                          <span class="event__offer-price">${offer.price}</span>
-                        </label>
-                      </div>`;
-  });
+  const offerTemplate = offers.reduce((accumulator, offer) =>
+    `${accumulator}<div class="event__offer-selector">
+      <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage" ${ifOfferSelected(offer)} ${isDisabled ? 'disabled' : ''}>
+      <label class="event__offer-label" for="${offer.id}">
+        <span class="event__offer-title">${offer.title}</span>
+        &plus;&euro;&nbsp;
+        <span class="event__offer-price">${offer.price}</span>
+      </label>
+    </div>`, '');
   return `<section class="event__section  event__section--offers">
             <h3 class="event__section-title  event__section-title--offers">Offers</h3>
             <div class="event__available-offers">
@@ -73,8 +71,8 @@ const createOffersTemplate = (offers, isDisabled) => {
           </section>`;
 };
 
-const createEditEventTemplate = (data, editMode, destinations) => {
-  const {type, fromDate, toDate, offers, destination, totalPrice, isDisabled, isSaving, isDeleting} = data;
+const createEditEventTemplate = (event, editMode, destinations) => {
+  const {type, fromDate, toDate, offers, destination, totalPrice, isDisabled, isSaving, isDeleting} = event;
 
   let destinationTemplate = '';
   let offersTemplate = '';
@@ -88,7 +86,7 @@ const createEditEventTemplate = (data, editMode, destinations) => {
     destinationTemplate = createDestinationTemplate(destination);
   }
 
-  if (data.offers.length !== 0) {
+  if (event.offers.length !== 0) {
     offersTemplate = createOffersTemplate(offers, isDisabled);
   }
 
@@ -197,7 +195,7 @@ const createEditEventTemplate = (data, editMode, destinations) => {
 </li>`;
 };
 
-export default class EditEventView extends AbstractStatefulView{
+export default class EditEventView extends AbstractStatefulView {
 
   #fromDatepicker = null;
   #toDatepicker = null;
@@ -255,7 +253,8 @@ export default class EditEventView extends AbstractStatefulView{
     );
   };
 
-  #convertEventToStatement = (event) => ({...event,
+  #convertEventToStatement = (event) => ({
+    ...event,
     isDisabled: false,
     isSaving: false,
     isDeleting: false,
@@ -319,8 +318,8 @@ export default class EditEventView extends AbstractStatefulView{
     if (evt.target.closest('.event__type-input')) {
       evt.preventDefault();
       this.updateElement({
-        type : evt.target.value,
-        offers : this._callback.chageEventTypeClick(evt.target.value),
+        type: evt.target.value,
+        offers: this._callback.chageEventTypeClick(evt.target.value),
       });
     }
   };
@@ -367,7 +366,7 @@ export default class EditEventView extends AbstractStatefulView{
 
   #editPriceHandler = (evt) => {
     evt.preventDefault();
-    this._setState({totalPrice : +evt.target.value});
+    this._setState({totalPrice: +evt.target.value});
   };
 
   #editOffersHandler = (evt) => {
@@ -380,7 +379,7 @@ export default class EditEventView extends AbstractStatefulView{
       }
       : offer);
 
-    this._setState({ offers });
+    this._setState({offers});
   };
 
   #setInnerHandlers = () => {
