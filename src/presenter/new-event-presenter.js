@@ -3,6 +3,7 @@ import {remove, render, replace} from '../framework/render';
 import {UpdateType, UserAction} from '../utils/const';
 import {RenderPosition} from '../framework/render';
 import {EditMode} from '../utils/const';
+import {isEscPressed} from '../utils/common';
 
 export default class NewEventPresenter {
   #newEventContainer = null;
@@ -103,7 +104,7 @@ export default class NewEventPresenter {
   };
 
   #onEscKeyDown = (evt) => {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
+    if (isEscPressed(evt)) {
       evt.preventDefault();
       this.destroy();
     }

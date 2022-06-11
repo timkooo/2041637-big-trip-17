@@ -3,6 +3,7 @@ import {remove, render, replace} from '../framework/render';
 import EditEventView from '../view/edit-event-view';
 import {UserAction, UpdateType} from '../utils/const';
 import {EditMode} from '../utils/const';
+import {isEscPressed} from '../utils/common';
 
 const EventMode = {
   DEFAULT : 'default',
@@ -78,11 +79,12 @@ export default class EventPresenter {
   }
 
   #onEscKeyDown = (evt) => {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
+    if (isEscPressed(evt)) {
       this.#editEventComponent.reset(this.#event);
       this.#closeEditFormHandler();
     }
   };
+
 
   setSaving = () => {
     if (this.#eventMode === EventMode.EDITING) {
